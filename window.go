@@ -89,8 +89,8 @@ func (w *Window) RefreshRelativePlacement() {
 	// overridden in Popup
 }
 
-func (w *Window) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
-	if w.WidgetImplement.MouseButtonEvent(x, y, button, down, modifier) {
+func (w *Window) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
+	if w.WidgetImplement.MouseButtonEvent(self, x, y, button, down, modifier) {
 		return true
 	}
 	if button == glfw.MouseButton1 {
@@ -100,7 +100,7 @@ func (w *Window) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, 
 	return false
 }
 
-func (w *Window) MouseDragEvent(x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
+func (w *Window) MouseDragEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
 	if w.drag && (button&1<<uint(glfw.MouseButton1)) != 0 {
 		pW, pH := w.Parent().Size()
 		w.x = clampI(w.x+relX, 0, pW-w.w)
@@ -110,16 +110,16 @@ func (w *Window) MouseDragEvent(x, y, relX, relY, button int, modifier glfw.Modi
 	return false
 }
 
-func (w *Window) ScrollEvent(x, y, relX, relY int) bool {
-	w.WidgetImplement.ScrollEvent(x, y, relX, relY)
+func (w *Window) ScrollEvent(self Widget, x, y, relX, relY int) bool {
+	w.WidgetImplement.ScrollEvent(self, x, y, relX, relY)
 	return true
 }
 
-func (w *Window) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (w *Window) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	if w.buttonPanel != nil {
 		w.buttonPanel.SetVisible(false)
 	}
-	width, height := w.WidgetImplement.PreferredSize(ctx, widget)
+	width, height := w.WidgetImplement.PreferredSize(self, ctx)
 	if w.buttonPanel != nil {
 		w.buttonPanel.SetVisible(true)
 	}
@@ -130,21 +130,21 @@ func (w *Window) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
 	return maxI(width, int(bounds[2]-bounds[0])+20), maxI(height, int(bounds[3]-bounds[1]))
 }
 
-func (w *Window) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
+func (w *Window) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 	if w.buttonPanel == nil {
-		w.WidgetImplement.OnPerformLayout(ctx, widget)
+		w.WidgetImplement.OnPerformLayout(self, ctx)
 	} else {
 		w.buttonPanel.SetVisible(false)
-		w.WidgetImplement.OnPerformLayout(ctx, w)
+		w.WidgetImplement.OnPerformLayout(self, ctx)
 		for _, c := range w.buttonPanel.Children() {
 			c.SetFixedSize(22, 22)
 			c.SetFontSize(15)
 		}
 		w.buttonPanel.SetVisible(true)
 		w.buttonPanel.SetSize(w.Width(), 22)
-		panelW, _ := w.buttonPanel.PreferredSize(ctx, w.buttonPanel)
+		panelW, _ := w.buttonPanel.PreferredSize(w.buttonPanel, ctx)
 		w.buttonPanel.SetPosition(w.Width()-(panelW+5), 3)
-		w.buttonPanel.OnPerformLayout(ctx, w.buttonPanel)
+		w.buttonPanel.OnPerformLayout(w.buttonPanel, ctx)
 	}
 }
 

@@ -9,10 +9,10 @@ import (
 type ButtonFlags int
 
 const (
-	NormalButton ButtonFlags = iota
-	RadioButton
-	ToggleButton
-	PopupButton
+	NormalButton ButtonFlags = 1
+	RadioButton  ButtonFlags = 2
+	ToggleButton ButtonFlags = 4
+	PopupButton  ButtonFlags = 8
 )
 
 type ButtonIconPosition int
@@ -145,9 +145,8 @@ func (b *Button) FontSize() int {
 	return b.theme.ButtonFontSize
 }
 
-
-func (b *Button) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
-	b.WidgetImplement.MouseButtonEvent(x, y, button, down, modifier)
+func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
+	b.WidgetImplement.MouseButtonEvent(b, x, y, button, down, modifier)
 
 	if button == glfw.MouseButton1 && b.enabled {
 		pushedBackup := b.pushed
@@ -189,7 +188,12 @@ func (b *Button) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, 
 				b.pushed = true
 			}
 		} else if b.pushed {
-
+			if b.Contains(x, y) && b.callback != nil {
+				b.callback()
+			}
+			if b.flags&NormalButton != 0 {
+				b.pushed = false
+			}
 		}
 		if pushedBackup != b.pushed && b.changeCallback != nil {
 			b.changeCallback(b.pushed)
@@ -199,7 +203,7 @@ func (b *Button) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, 
 	return false
 }
 
-func (b *Button) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (b *Button) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	fontSize := float32(b.FontSize())
 
 	ctx.SetFontSize(fontSize)

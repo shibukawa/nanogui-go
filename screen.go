@@ -26,7 +26,6 @@ type Screen struct {
 	dragActive             bool
 	dragWidget             Widget
 	lastInteraction        float32
-	processEvents          bool
 	backgroundColor        nanovgo.Color
 	caption                string
 	shutdownGLFWOnDestruct bool
@@ -88,50 +87,43 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	}
 
 	screen.window.SetCursorPosCallback(func(w *glfw.Window, xpos, ypos float64) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.cursorPositionCallbackEvent(xpos, ypos)
 		}
 	})
 
 	screen.window.SetMouseButtonCallback(func(w *glfw.Window, button glfw.MouseButton, action glfw.Action, mods glfw.ModifierKey) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.mouseButtonCallbackEvent(button, action, mods)
 		}
 	})
 
 	screen.window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scanCode int, action glfw.Action, mods glfw.ModifierKey) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.keyCallbackEvent(key, scanCode, action, mods)
 		}
 	})
 
 	screen.window.SetCharCallback(func(w *glfw.Window, char rune) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.charCallbackEvent(char)
 		}
 	})
 
 	screen.window.SetDropCallback(func(w *glfw.Window, names []string) {
-		screen, ok := nanoguiScreens[w]
-		if ok && screen.processEvents && screen.dropEventCallback != nil {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.dropEventCallback(names)
 		}
 	})
 
 	screen.window.SetScrollCallback(func(w *glfw.Window, xoff float64, yoff float64) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.scrollCallbackEvent(float32(xoff), float32(yoff))
 		}
 	})
 
 	screen.window.SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
-		screen, ok := nanoguiScreens[w]
-		if ok && !screen.processEvents {
+		if screen, ok := nanoguiScreens[w]; ok {
 			screen.resizeEventCallback(width, height)
 		}
 	})
@@ -162,7 +154,6 @@ func (s *Screen) Initialize(window *glfw.Window, shutdownGLFWOnDestruct bool) {
 	s.modifiers = 0
 	s.dragActive = false
 	s.lastInteraction = LastInteraction()
-	s.processEvents = true
 	nanoguiScreens[window] = s
 	runtime.SetFinalizer(s, func(s *Screen) {
 		delete(nanoguiScreens, window)
@@ -247,10 +238,10 @@ func (s *Screen) SetDropEventCallback(callback func(files []string) bool) {
 }
 
 // KeyboardEvent() is a default key event handler
-func (s *Screen) KeyboardEvent(key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
+func (s *Screen) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
 	if len(s.focusPath) > 0 {
 		for _, path := range s.focusPath {
-			if path.Focused() && path.KeyboardEvent(key, scanCode, action, modifiers) {
+			if path.Focused() && path.KeyboardEvent(path, key, scanCode, action, modifiers) {
 				return true
 			}
 		}
@@ -259,10 +250,10 @@ func (s *Screen) KeyboardEvent(key glfw.Key, scanCode int, action glfw.Action, m
 }
 
 // KeyboardCharacterEvent() is a text input event handler: codepoint is native endian UTF-32 format
-func (s *Screen) KeyboardCharacterEvent(codePoint rune) bool {
+func (s *Screen) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
 	if len(s.focusPath) > 0 {
 		for _, path := range s.focusPath {
-			if path.Focused() && path.KeyboardCharacterEvent(codePoint) {
+			if path.Focused() && path.KeyboardCharacterEvent(path, codePoint) {
 				return true
 			}
 		}
@@ -297,18 +288,20 @@ func (s *Screen) ShutdownGLFWOnDestruct() bool {
 func (s *Screen) UpdateFocus(widget Widget) {
 	for _, w := range s.focusPath {
 		if !w.Focused() {
-			w.FocusEvent(false)
+			w.FocusEvent(w, false)
 		}
 	}
 	s.focusPath = s.focusPath[:0]
 	var window *Window
 	for widget != nil {
 		s.focusPath = append(s.focusPath, widget)
-		window = widget.(*Window)
+		if _, ok := widget.(*Window); ok {
+			window = widget.(*Window)
+		}
 		widget = widget.Parent()
 	}
 	for _, w := range s.focusPath {
-		w.FocusEvent(true)
+		w.FocusEvent(w, true)
 	}
 	if window != nil {
 		s.MoveWindowToFront(window)
@@ -337,8 +330,8 @@ func (s *Screen) DisposeWindow(window *Window) {
 func (s *Screen) CenterWindow(window *Window) {
 	w, h := window.Size()
 	if w == 0 && h == 0 {
-		window.SetSize(window.PreferredSize(s.context, window))
-		window.OnPerformLayout(s.context, window)
+		window.SetSize(window.PreferredSize(window, s.context))
+		window.OnPerformLayout(window, s.context)
 	}
 	x, y := window.Size()
 	window.SetPosition((s.x-x)/2, (s.y-y)/2)
@@ -384,7 +377,7 @@ func (s *Screen) drawWidgets() {
 
 	if elapsed > 0.5 {
 		// Draw tooltips
-		widget := s.FindWidget(s.mousePosX, s.mousePosY)
+		widget := s.FindWidget(s, s.mousePosX, s.mousePosY)
 		if widget != nil && widget.Tooltip() != "" {
 			var tooltipWidth float32 = 150
 			ctx := s.context
@@ -424,17 +417,17 @@ func (s *Screen) cursorPositionCallbackEvent(x, y float64) bool {
 	px := int(x) - 1
 	py := int(y) - 2
 	if !s.dragActive {
-		widget := s.FindWidget(int(x), int(y))
+		widget := s.FindWidget(s, int(x), int(y))
 		if widget != nil && widget.Cursor() != s.cursor {
 			//s.cursor = widget.Cursor()
 			//s.window.SetCursor()
 		}
 	} else {
 		ax, ay := s.dragWidget.AbsolutePosition()
-		ret = s.dragWidget.MouseDragEvent(px-ax, py-ay, px-s.mousePosX, py-s.mousePosY, s.mouseState, s.modifiers)
+		ret = s.dragWidget.MouseDragEvent(s.dragWidget, px-ax, py-ay, px-s.mousePosX, py-s.mousePosY, s.mouseState, s.modifiers)
 	}
 	if !ret {
-		ret = s.MouseMotionEvent(px, py, px-s.mousePosX, py-s.mousePosY, s.mouseState, s.modifiers)
+		ret = s.MouseMotionEvent(s, px, py, px-s.mousePosX, py-s.mousePosY, s.mouseState, s.modifiers)
 	}
 	s.mousePosX = px
 	s.mousePosY = py
@@ -460,10 +453,10 @@ func (s *Screen) mouseButtonCallbackEvent(button glfw.MouseButton, action glfw.A
 		s.mouseState &= ^(1 << uint(button))
 	}
 
-	dropWidget := s.FindWidget(s.mousePosX, s.mousePosY)
+	dropWidget := s.FindWidget(s, s.mousePosX, s.mousePosY)
 	if s.dragActive && action == glfw.Release && dropWidget != s.dragWidget {
 		ax, ay := s.dragWidget.Parent().AbsolutePosition()
-		s.dragWidget.MouseButtonEvent(s.mousePosX-ax, s.mousePosY-ay, button, false, modifiers)
+		s.dragWidget.MouseButtonEvent(s.dragWidget, s.mousePosX-ax, s.mousePosY-ay, button, false, modifiers)
 	}
 
 	if dropWidget != nil && dropWidget.Cursor() != s.cursor {
@@ -472,24 +465,24 @@ func (s *Screen) mouseButtonCallbackEvent(button glfw.MouseButton, action glfw.A
 	}
 
 	if action == glfw.Press && button == glfw.MouseButton1 {
-		s.dragWidget = s.FindWidget(s.mousePosX, s.mousePosY)
+		s.dragWidget = s.FindWidget(s, s.mousePosX, s.mousePosY)
 		if s.dragWidget == s {
 			s.dragWidget = nil
 		}
 		s.dragActive = s.dragWidget != nil
-		if s.dragActive {
+		if !s.dragActive {
 			s.UpdateFocus(nil)
 		}
 	} else {
 		s.dragActive = false
 		s.dragWidget = nil
 	}
-	return s.MouseButtonEvent(s.mousePosX, s.mousePosY, button, action == glfw.Press, modifiers)
+	return s.MouseButtonEvent(s, s.mousePosX, s.mousePosY, button, action == glfw.Press, modifiers)
 }
 
 func (s *Screen) keyCallbackEvent(key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
 	s.lastInteraction = LastInteraction()
-	return s.KeyboardEvent(key, scanCode, action, modifiers)
+	return s.KeyboardEvent(s, key, scanCode, action, modifiers)
 }
 
 func (s *Screen) charCallbackEvent(codePoint rune) bool {
@@ -515,7 +508,7 @@ func (s *Screen) scrollCallbackEvent(x, y float32) bool {
 			}
 		}
 	}
-	return s.ScrollEvent(s.mousePosX, s.mousePosY, int(x), int(y))
+	return s.ScrollEvent(s, s.mousePosX, s.mousePosY, int(x), int(y))
 }
 
 func (s *Screen) resizeCallbackEvent(width, height int) bool {
@@ -537,7 +530,7 @@ func (s *Screen) resizeCallbackEvent(width, height int) bool {
 }
 
 func (s *Screen) PerformLayout() {
-	s.OnPerformLayout(s.context, s)
+	s.OnPerformLayout(s, s.context)
 }
 
 func (s *Screen) String() string {

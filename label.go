@@ -58,7 +58,7 @@ func NewLabel(parent Widget, caption string) *Label {
 	return label
 }
 
-func (l *Label) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (l *Label) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	if l.caption == "" {
 		return 0, 0
 	}

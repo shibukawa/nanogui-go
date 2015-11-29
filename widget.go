@@ -48,7 +48,7 @@ type Widget interface {
 	SetEnabled(e bool)
 	Focused() bool
 	SetFocused(f bool)
-	RequestFocus()
+	RequestFocus(self Widget)
 	Tooltip() string
 	SetTooltip(s string)
 	FontSize() int
@@ -57,17 +57,17 @@ type Widget interface {
 	Cursor() Cursor
 	SetCursor(c Cursor)
 	Contains(x, y int) bool
-	FindWidget(x, y int) Widget
-	MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool
-	MouseMotionEvent(x, y, relX, relY, button int, modifier glfw.ModifierKey) bool
-	MouseDragEvent(x, y, relX, relY, button int, modifier glfw.ModifierKey) bool
-	MouseEnterEvent(x, y int, enter bool) bool
-	ScrollEvent(x, y, relX, relY int) bool
-	FocusEvent(f bool) bool
-	KeyboardEvent(key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool
-	KeyboardCharacterEvent(codePoint rune) bool
-	PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int)
-	OnPerformLayout(ctx *nanovgo.Context, widget Widget)
+	FindWidget(self Widget, x, y int) Widget
+	MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool
+	MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool
+	MouseDragEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool
+	MouseEnterEvent(self Widget, x, y int, enter bool) bool
+	ScrollEvent(self Widget, x, y, relX, relY int) bool
+	FocusEvent(self Widget, f bool) bool
+	KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool
+	KeyboardCharacterEvent(self Widget, codePoint rune) bool
+	PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
+	OnPerformLayout(self Widget, ctx *nanovgo.Context)
 	Draw(ctx *nanovgo.Context)
 	String() string
 }
@@ -297,15 +297,15 @@ func (w *WidgetImplement) SetFocused(f bool) {
 }
 
 // RequestFocus() requests the focus to be moved to this widget
-func (w *WidgetImplement) RequestFocus() {
-	var widget Widget = w
+func (w *WidgetImplement) RequestFocus(self Widget) {
+	var widget Widget = self
 	var parent Widget = widget.Parent()
 	for parent != nil {
 		widget = parent
 		parent = widget.Parent()
 	}
-	screen := parent.(*Screen)
-	screen.UpdateFocus(w)
+	screen := widget.(*Screen)
+	screen.UpdateFocus(self)
 }
 
 // Tooltip() returns tooltip string
@@ -352,33 +352,33 @@ func (w *WidgetImplement) Contains(x, y int) bool {
 }
 
 // FindWidget() determines the widget located at the given position value (recursive)
-func (w *WidgetImplement) FindWidget(x, y int) Widget {
-	for _, child := range w.children {
+func (w *WidgetImplement) FindWidget(self Widget, x, y int) Widget {
+	for _, child := range self.Children() {
 		if child.Visible() && child.Contains(x-w.x, y-w.y) {
-			return child.FindWidget(x-w.x, y-w.y)
+			return child.FindWidget(child, x-w.x, y-w.y)
 		}
 	}
-	if w.Contains(x, y) {
-		return w
+	if self.Contains(x, y) {
+		return self
 	}
 	return nil
 }
 
 // MouseButtonEvent() handles a mouse button event (default implementation: propagate to children)
-func (w *WidgetImplement) MouseButtonEvent(x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
+func (w *WidgetImplement) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
 	for _, child := range w.children {
-		if child.Visible() && child.Contains(x-w.x, y-w.y) && child.MouseButtonEvent(x-w.x, y-w.y, button, down, modifier) {
+		if child.Visible() && child.Contains(x-w.x, y-w.y) && child.MouseButtonEvent(child, x-w.x, y-w.y, button, down, modifier) {
 			return true
 		}
 	}
 	if button == glfw.MouseButton1 && down && !w.focused {
-		w.RequestFocus()
+		self.RequestFocus(self)
 	}
 	return false
 }
 
 // MouseMotionEvent() handles a mouse motion event (default implementation: propagate to children)
-func (w *WidgetImplement) MouseMotionEvent(x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
+func (w *WidgetImplement) MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
 	for _, child := range w.children {
 		if !child.Visible() {
 			continue
@@ -386,9 +386,9 @@ func (w *WidgetImplement) MouseMotionEvent(x, y, relX, relY, button int, modifie
 		contained := child.Contains(x-w.x, y-w.y)
 		prevContained := child.Contains(x-w.x-relX, y-w.y-relY)
 		if contained != prevContained {
-			child.MouseEnterEvent(x, y, contained)
+			child.MouseEnterEvent(child, x, y, contained)
 		}
-		if (contained || prevContained) && child.MouseMotionEvent(x-w.x, y-w.y, relX, relY, button, modifier) {
+		if (contained || prevContained) && child.MouseMotionEvent(child, x-w.x, y-w.y, relX, relY, button, modifier) {
 			return true
 		}
 	}
@@ -396,23 +396,23 @@ func (w *WidgetImplement) MouseMotionEvent(x, y, relX, relY, button int, modifie
 }
 
 // MouseDragEvent() handles a mouse drag event (default implementation: do nothing)
-func (w *WidgetImplement) MouseDragEvent(x, y, relX, relY int, button int, modifier glfw.ModifierKey) bool {
+func (w *WidgetImplement) MouseDragEvent(self Widget, x, y, relX, relY int, button int, modifier glfw.ModifierKey) bool {
 	return false
 }
 
 // MouseEnterEvent() handles a mouse enter/leave event (default implementation: record this fact, but do nothing)
-func (w *WidgetImplement) MouseEnterEvent(x, y int, enter bool) bool {
+func (w *WidgetImplement) MouseEnterEvent(self Widget, x, y int, enter bool) bool {
 	w.focused = enter
 	return false
 }
 
 // ScrollEvent() handles a mouse scroll event (default implementation: propagate to children)
-func (w *WidgetImplement) ScrollEvent(x, y, relX, relY int) bool {
+func (w *WidgetImplement) ScrollEvent(self Widget, x, y, relX, relY int) bool {
 	for _, child := range w.children {
 		if !child.Visible() {
 			continue
 		}
-		if child.Contains(x-w.x, y-w.y) && child.ScrollEvent(x-w.x, y-w.y, relX, relY) {
+		if child.Contains(x-w.x, y-w.y) && child.ScrollEvent(child, x-w.x, y-w.y, relX, relY) {
 			return true
 		}
 	}
@@ -420,50 +420,41 @@ func (w *WidgetImplement) ScrollEvent(x, y, relX, relY int) bool {
 }
 
 // FocusEvent() handles a focus change event (default implementation: record the focus status, but do nothing)
-func (w *WidgetImplement) FocusEvent(f bool) bool {
+func (w *WidgetImplement) FocusEvent(self Widget, f bool) bool {
 	w.focused = f
 	return false
 }
 
 // KeyboardEvent() handles a keyboard event (default implementation: do nothing)
-func (w *WidgetImplement) KeyboardEvent(key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool {
+func (w *WidgetImplement) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool {
 	return false
 }
 
 // KeyboardCharacterEvent() handles text input (UTF-32 format) (default implementation: do nothing)
-func (w *WidgetImplement) KeyboardCharacterEvent(codePoint rune) bool {
+func (w *WidgetImplement) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
 	return false
 }
 
 // PreferredSize() computes the preferred size of the widget
-func (w *WidgetImplement) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (w *WidgetImplement) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	if w.layout != nil {
-		return w.layout.PreferredSize(ctx, widget)
+		return w.layout.PreferredSize(self, ctx)
 	}
 	return w.x, w.y
 }
 
 // PerformLayout() invokes the associated layout generator to properly place child widgets, if any
-func (w *WidgetImplement) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
+func (w *WidgetImplement) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 	if w.layout != nil {
-		w.layout.OnPerformLayout(ctx, widget)
+		w.layout.OnPerformLayout(self, ctx)
 	} else {
 		for _, child := range w.children {
-			prefW, prefH := child.PreferredSize(ctx, widget)
+			prefW, prefH := child.PreferredSize(child, ctx)
 			fixW, fixH := child.FixedSize()
-			var w, h int
-			if fixW > 0 {
-				w = fixW
-			} else {
-				w = prefW
-			}
-			if fixH > 0 {
-				h = fixH
-			} else {
-				h = prefH
-			}
+			w := toI(fixW > 0, fixW, prefW)
+			h := toI(fixH > 0, fixH, prefH)
 			child.SetSize(w, h)
-			child.OnPerformLayout(ctx, child)
+			child.OnPerformLayout(child, ctx)
 		}
 	}
 }

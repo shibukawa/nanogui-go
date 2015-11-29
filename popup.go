@@ -53,13 +53,13 @@ func (p *Popup) ParentWindow() *Window {
 	return p.parentWindow
 }
 
-func (p *Popup) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
+func (p *Popup) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 	if p.layout != nil || len(p.children) != 1 {
-		p.WidgetImplement.OnPerformLayout(ctx, p)
+		p.WidgetImplement.OnPerformLayout(self, ctx)
 	} else {
 		p.children[0].SetPosition(0, 0)
 		p.children[0].SetSize(p.w, p.h)
-		p.children[0].OnPerformLayout(ctx, p.children[0])
+		p.children[0].OnPerformLayout(p.children[0], ctx)
 	}
 }
 

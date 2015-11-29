@@ -2,7 +2,6 @@ package nanogui
 
 import (
 	"github.com/shibukawa/nanovgo"
-	"log"
 )
 
 type Alignment uint8
@@ -22,8 +21,8 @@ const (
 )
 
 type Layout interface {
-	OnPerformLayout(ctx *nanovgo.Context, widget Widget)
-	PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int)
+	OnPerformLayout(widget Widget, ctx *nanovgo.Context)
+	PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int)
 }
 
 // Simple horizontal/vertical box layout
@@ -80,7 +79,7 @@ func (b *BoxLayout) SetSpacing(s int) {
 	b.spacing = s
 }
 
-func (b *BoxLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
+func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 	fX, fY := widget.FixedSize()
 	var containerSize [2]int
 	if fX > 0 {
@@ -111,7 +110,7 @@ func (b *BoxLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
 			position += b.spacing
 		}
 		var fs [2]int
-		pX, pY := child.PreferredSize(ctx, widget)
+		pX, pY := child.PreferredSize(child, ctx)
 		fs[0], fs[1] = child.FixedSize()
 		var targetSize [2]int
 		if fX > 0 {
@@ -144,12 +143,12 @@ func (b *BoxLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
 		}
 		child.SetPosition(pos[0], pos[1])
 		child.SetSize(targetSize[0], targetSize[1])
-		child.OnPerformLayout(ctx, child)
+		child.OnPerformLayout(child, ctx)
 		position += targetSize[axis1]
 	}
 }
 
-func (b *BoxLayout) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (b *BoxLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int) {
 	size := []int{2 * b.margin, 2 * b.margin}
 
 	if _, ok := widget.(*Window); ok {
@@ -170,7 +169,7 @@ func (b *BoxLayout) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int
 			size[axis1] += b.spacing
 		}
 
-		pX, pY := child.PreferredSize(ctx, child)
+		pX, pY := child.PreferredSize(child, ctx)
 		fX, fY := child.FixedSize()
 		var targetSize [2]int
 		if fX > 0 {
@@ -257,17 +256,13 @@ func (g *GroupLayout) SetGroupSpacing(s int) {
 	g.groupSpacing = s
 }
 
-func (g *GroupLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
-	log.Println("GroupLayout#OnPerformLayout")
+func (g *GroupLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 	height := g.margin
 	availableWidth := -g.margin * 2
 	availableWidth += toI(widget.FixedWidth() > 0, widget.FixedWidth(), widget.Width())
-	log.Println("@1", height, widget.String())
 	window, ok := widget.(*Window)
 	if ok && window.Title() != "" {
-		log.Println("GroupLayout: this is window")
 		height += widget.Theme().WindowHeaderHeight - g.margin/2
-		log.Println("@2", height, widget.Theme().WindowHeaderHeight, g.margin/2)
 	}
 	first := true
 	indent := false
@@ -279,7 +274,6 @@ func (g *GroupLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
 		label, ok := child.(*Label)
 		if !first {
 			height += toI(ok, g.groupSpacing, g.spacing)
-			log.Println("@3", height)
 		}
 		first = false
 		var indentValue int
@@ -289,16 +283,14 @@ func (g *GroupLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
 		}
 
 		pW := availableWidth - indentValue
-		_, pH := child.PreferredSize(ctx, child)
+		_, pH := child.PreferredSize(child, ctx)
 		fW, fH := child.FixedSize()
 		tW := toI(fW > 0, fW, pW)
 		tH := toI(fH > 0, fH, pH)
 		child.SetPosition(g.margin+indentValue, height)
-		log.Println("SetPosition:", child.String(), g.margin+indentValue, height)
 		child.SetSize(tW, tH)
-		child.OnPerformLayout(ctx, child)
+		child.OnPerformLayout(child, ctx)
 		height += tH
-		log.Println("@4", height)
 
 		if ok {
 			indent = label.Caption() != ""
@@ -306,7 +298,7 @@ func (g *GroupLayout) OnPerformLayout(ctx *nanovgo.Context, widget Widget) {
 	}
 }
 
-func (g *GroupLayout) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, int) {
+func (g *GroupLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int) {
 	height := g.margin
 	width := g.margin * 2
 
@@ -326,8 +318,7 @@ func (g *GroupLayout) PreferredSize(ctx *nanovgo.Context, widget Widget) (int, i
 			height += toI(ok, g.groupSpacing, g.spacing)
 		}
 		first = false
-
-		pW, pH := child.PreferredSize(ctx, child)
+		pW, pH := child.PreferredSize(child, ctx)
 		fW, fH := child.FixedSize()
 		tW := toI(fW > 0, fW, pW)
 		tH := toI(fH > 0, fH, pH)
