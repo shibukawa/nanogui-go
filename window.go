@@ -52,9 +52,7 @@ func (w *Window) SetModal(m bool) {
 
 func (w *Window) ButtonPanel() Widget {
 	if w.buttonPanel == nil {
-		widget := &WidgetImplement{}
-		InitWidget(w, widget)
-		w.buttonPanel = widget
+		w.buttonPanel = NewWidget(w)
 		w.buttonPanel.SetLayout(NewBoxLayout(Horizontal, Middle, 0, 4))
 	}
 	return w.buttonPanel

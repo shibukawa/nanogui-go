@@ -40,6 +40,37 @@ type Button struct {
 	buttonGroup     []*Button
 }
 
+func NewButton(parent Widget, label string) *Button {
+	if label == "" {
+		label = "Untitled"
+	}
+	button := &Button{
+		caption:      label,
+		iconPosition: LeftCentered,
+		flags:        NormalButton,
+	}
+	InitWidget(button, parent)
+	return button
+}
+
+func NewToolButton(parent Widget, icon Icon) *Button {
+	button := NewButton(parent, "")
+	button.SetCaption("")
+	button.SetIcon(icon)
+	button.SetFlags(RadioButton | ToggleButton)
+	button.SetFixedSize(25, 25)
+	return button
+}
+
+func NewToolButtonByImage(parent Widget, img int) *Button {
+	button := NewButton(parent, "")
+	button.SetCaption("")
+	button.SetImageIcon(img)
+	button.SetFlags(RadioButton | ToggleButton)
+	button.SetFixedSize(25, 25)
+	return button
+}
+
 func (b *Button) Caption() string {
 	return b.caption
 }
@@ -125,19 +156,6 @@ func (b *Button) ButtonGroup() []*Button {
 	return b.buttonGroup
 }
 
-func NewButton(parent Widget, label string) *Button {
-	if label == "" {
-		label = "Untitled"
-	}
-	button := &Button{
-		caption:      label,
-		iconPosition: LeftCentered,
-		flags:        NormalButton,
-	}
-	InitWidget(button, parent)
-	return button
-}
-
 func (b *Button) FontSize() int {
 	if b.fontSize > 0 {
 		return b.fontSize
@@ -153,8 +171,8 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 		if down {
 			if b.flags&RadioButton != 0 {
 				if len(b.buttonGroup) == 0 {
-					for _, widget := range b.Parent().Children() {
-						button, ok := widget.(*Button)
+					for _, child := range self.Parent().Children() {
+						button, ok := child.(*Button)
 						if ok && button != b && button.Flags()&RadioButton != 0 && button.Pushed() {
 							button.SetPushed(false)
 							if button.changeCallback != nil {
@@ -182,7 +200,8 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 						}
 					}
 				}
-			} else if b.flags&ToggleButton != 0 {
+			}
+			if b.flags&ToggleButton != 0 {
 				b.pushed = !b.pushed
 			} else {
 				b.pushed = true

@@ -86,6 +86,12 @@ type WidgetImplement struct {
 	children                   []Widget
 }
 
+func NewWidget(parent Widget) Widget {
+	widget := &WidgetImplement{}
+	InitWidget(widget, parent)
+	return widget
+}
+
 // Parent() returns the parent widget
 func (w *WidgetImplement) Parent() Widget {
 	return w.parent
