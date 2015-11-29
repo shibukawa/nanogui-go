@@ -140,9 +140,6 @@ func (s *Screen) Initialize(window *glfw.Window, shutdownGLFWOnDestruct bool) {
 	s.fbW, s.fbH = window.GetFramebufferSize()
 	var err error
 	s.context, err = nanovgo.NewContext(nanovgo.StencilStrokes | nanovgo.AntiAlias)
-	s.context.CreateFontFromMemory("sans", MustAsset("fonts/Roboto-Regular.ttf"), 0)
-	s.context.CreateFontFromMemory("sans-bold", MustAsset("fonts/Roboto-Bold.ttf"), 0)
-	s.context.CreateFontFromMemory("icons", MustAsset("fonts/MaterialIcons-Regular.ttf"), 0)
 	if err != nil {
 		panic(err)
 	}

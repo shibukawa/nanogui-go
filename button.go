@@ -58,7 +58,7 @@ func NewToolButton(parent Widget, icon Icon) *Button {
 	button.SetCaption("")
 	button.SetIcon(icon)
 	button.SetFlags(RadioButton | ToggleButton)
-	button.SetFixedSize(25, 25)
+	//button.SetFixedSize(25, 25)
 	return button
 }
 
@@ -67,7 +67,7 @@ func NewToolButtonByImage(parent Widget, img int) *Button {
 	button.SetCaption("")
 	button.SetImageIcon(img)
 	button.SetFlags(RadioButton | ToggleButton)
-	button.SetFixedSize(25, 25)
+	//button.SetFixedSize(25, 25)
 	return button
 }
 
@@ -232,7 +232,7 @@ func (b *Button) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	ih := fontSize
 
 	if b.icon > 0 {
-		ih *= 1.5
+		ih *= 1.5 / 2
 		ctx.SetFontFace(b.theme.FontIcons)
 		ctx.SetFontSize(ih)
 		iw, _ = ctx.TextBounds(0, 0, string([]rune{rune(b.icon)}))
@@ -242,7 +242,6 @@ func (b *Button) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 		w, h, _ := ctx.ImageSize(b.imageIcon)
 		iw = float32(w) * ih / float32(h)
 	}
-	//log.Println(int(tw + iw + 20), int(fontSize) + 10)
 	return int(tw + iw + 20), int(fontSize) + 10
 }
 
@@ -268,7 +267,6 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 		gradBot = b.theme.ButtonGradientBotUnfocused
 	}
 	ctx.BeginPath()
-
 	ctx.RoundedRect(bx+1.0, by+1.0, bw-2.0, bh-2.0, float32(b.theme.ButtonCornerRadius-1))
 
 	if b.backgroundColor.A != 0.0 {
@@ -280,7 +278,7 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 			gradTop.A = 0.8
 			gradBot.A = 0.8
 		} else {
-			a := b.backgroundColor.A
+			a := 1 - b.backgroundColor.A
 			if !b.enabled {
 				a = a*0.5 + 0.5
 			}
@@ -328,7 +326,7 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 	if b.icon > 0 || b.imageIcon > 0 {
 		var iw, ih float32
 		if b.icon > 0 {
-			ih = fontSize * 1.5
+			ih = fontSize * 1.5 / 2
 			ctx.SetFontSize(ih)
 			ctx.SetFontFace(b.theme.FontIcons)
 			iw, _ = ctx.TextBounds(0, 0, string([]rune{rune(b.icon)}))

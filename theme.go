@@ -52,7 +52,7 @@ type Theme struct {
 func NewStandardTheme(ctx *nanovgo.Context) *Theme {
 	ctx.CreateFontFromMemory("sans", MustAsset("fonts/Roboto-Regular.ttf"), 0)
 	ctx.CreateFontFromMemory("sans-bold", MustAsset("fonts/Roboto-Bold.ttf"), 0)
-	ctx.CreateFontFromMemory("icons", MustAsset("fonts/MaterialIcons-Regular.ttf"), 0)
+	ctx.CreateFontFromMemory("icons", MustAsset("fonts/entypo.ttf"), 0)
 	return &Theme{
 		StandardFontSize:     16,
 		ButtonFontSize:       20,

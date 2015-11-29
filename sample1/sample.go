@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/shibukawa/nanogui.go"
+	"github.com/shibukawa/nanovgo"
 )
 
 type Application struct {
@@ -26,7 +27,8 @@ func (a *Application) init() {
 	})
 
 	b2 := nanogui.NewButton(window, "Styled")
-	b2.SetIcon(nanogui.IconFlightTakeoff)
+	b2.SetBackgroundColor(nanovgo.RGBA(0, 0, 255, 25))
+	b2.SetIcon(nanogui.IconRocket)
 	b2.SetCallback(func() {
 		fmt.Println("pushed!")
 	})
@@ -49,9 +51,9 @@ func (a *Application) init() {
 	tools.SetLayout(nanogui.NewBoxLayout(nanogui.Horizontal, nanogui.Middle, 0, 6))
 
 	nanogui.NewToolButton(tools, nanogui.IconCloud)
-	nanogui.NewToolButton(tools, nanogui.IconFavorite)
-	nanogui.NewToolButton(tools, nanogui.IconComputer)
-	nanogui.NewToolButton(tools, nanogui.IconFontDownload)
+	nanogui.NewToolButton(tools, nanogui.IconFastForward)
+	nanogui.NewToolButton(tools, nanogui.IconCompass)
+	nanogui.NewToolButton(tools, nanogui.IconInstall)
 
 	a.screen.PerformLayout()
 
