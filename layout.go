@@ -38,7 +38,18 @@ type BoxLayout struct {
 	spacing     int
 }
 
-func NewBoxLayout(orientation Orientation, alignment Alignment, margin, spacing int) *BoxLayout {
+func NewBoxLayout(orientation Orientation, alignment Alignment, setting ...int) *BoxLayout {
+	var margin, spacing int
+	switch len(setting) {
+	case 0:
+	case 1:
+		margin = setting[0]
+	case 2:
+		margin = setting[0]
+		spacing = setting[1]
+	default:
+		panic("NewBoxLayout can accept extra parameter upto 2 (margin, spacing).")
+	}
 	return &BoxLayout{
 		orientation: orientation,
 		alignment:   alignment,
@@ -203,7 +214,31 @@ type GroupLayout struct {
 	groupSpacing int
 }
 
-func NewGroupLayout(margin, spacing, groupSpacing, groupIndent int) Layout {
+func NewGroupLayout(setting ...int) Layout {
+	margin := -1
+	spacing := -1
+	groupIndent := -1
+	groupSpacing := -1
+	switch len(setting) {
+	case 0:
+	case 1:
+		margin = setting[0]
+	case 2:
+		margin = setting[0]
+		spacing = setting[1]
+	case 3:
+		margin = setting[0]
+		spacing = setting[1]
+		groupIndent = setting[2]
+	case 4:
+		margin = setting[0]
+		spacing = setting[1]
+		groupIndent = setting[2]
+		groupSpacing = setting[3]
+	default:
+		panic("NewGroupLayout can accept extra parameter upto 4 (margin, spacing, groupIndent, groupSpacing).")
+	}
+
 	if margin < 0 {
 		margin = 15
 	}

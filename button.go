@@ -9,10 +9,10 @@ import (
 type ButtonFlags int
 
 const (
-	NormalButton ButtonFlags = 1
-	RadioButton  ButtonFlags = 2
-	ToggleButton ButtonFlags = 4
-	PopupButton  ButtonFlags = 8
+	NormalButtonType ButtonFlags = 1
+	RadioButtonType  ButtonFlags = 2
+	ToggleButtonType ButtonFlags = 4
+	PopupButtonType  ButtonFlags = 8
 )
 
 type ButtonIconPosition int
@@ -40,14 +40,21 @@ type Button struct {
 	buttonGroup     []*Button
 }
 
-func NewButton(parent Widget, label string) *Button {
-	if label == "" {
+func NewButton(parent Widget, labels ...string) *Button {
+	var label string
+	switch len(labels) {
+	case 0:
 		label = "Untitled"
+	case 1:
+		label = labels[0]
+	default:
+		panic("NewButton can accept only one extra parameter (label)")
 	}
+
 	button := &Button{
 		caption:      label,
 		iconPosition: LeftCentered,
-		flags:        NormalButton,
+		flags:        NormalButtonType,
 	}
 	InitWidget(button, parent)
 	return button
@@ -57,7 +64,7 @@ func NewToolButton(parent Widget, icon Icon) *Button {
 	button := NewButton(parent, "")
 	button.SetCaption("")
 	button.SetIcon(icon)
-	button.SetFlags(RadioButton | ToggleButton)
+	button.SetFlags(RadioButtonType | ToggleButtonType)
 	//button.SetFixedSize(25, 25)
 	return button
 }
@@ -66,7 +73,7 @@ func NewToolButtonByImage(parent Widget, img int) *Button {
 	button := NewButton(parent, "")
 	button.SetCaption("")
 	button.SetImageIcon(img)
-	button.SetFlags(RadioButton | ToggleButton)
+	button.SetFlags(RadioButtonType | ToggleButtonType)
 	//button.SetFixedSize(25, 25)
 	return button
 }
@@ -88,6 +95,11 @@ func (b *Button) SetBackgroundColor(c nanovgo.Color) {
 }
 
 func (b *Button) TextColor() nanovgo.Color {
+	if !b.enabled {
+		return b.theme.DisabledTextColor
+	} else if b.textColor.A == 0.0 {
+		return b.theme.TextColor
+	}
 	return b.textColor
 }
 
@@ -169,11 +181,11 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 	if button == glfw.MouseButton1 && b.enabled {
 		pushedBackup := b.pushed
 		if down {
-			if b.flags&RadioButton != 0 {
+			if b.flags&RadioButtonType != 0 {
 				if len(b.buttonGroup) == 0 {
 					for _, child := range self.Parent().Children() {
 						button, ok := child.(*Button)
-						if ok && button != b && button.Flags()&RadioButton != 0 && button.Pushed() {
+						if ok && button != b && button.Flags()&RadioButtonType != 0 && button.Pushed() {
 							button.SetPushed(false)
 							if button.changeCallback != nil {
 								button.changeCallback(false)
@@ -182,7 +194,7 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 					}
 				} else {
 					for _, button := range b.buttonGroup {
-						if button != b && button.Flags()&RadioButton != 0 && button.Pushed() {
+						if button != b && button.Flags()&RadioButtonType != 0 && button.Pushed() {
 							button.SetPushed(false)
 							if button.changeCallback != nil {
 								button.changeCallback(false)
@@ -190,10 +202,10 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 						}
 					}
 				}
-			} else if b.flags&PopupButton != 0 {
+			} else if b.flags&PopupButtonType != 0 {
 				for _, widget := range b.Parent().Children() {
 					button, ok := widget.(*Button)
-					if ok && button != b && button.Flags()&PopupButton != 0 && button.Pushed() {
+					if ok && button != b && button.Flags()&PopupButtonType != 0 && button.Pushed() {
 						button.SetPushed(false)
 						if button.changeCallback != nil {
 							button.changeCallback(false)
@@ -201,7 +213,7 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 					}
 				}
 			}
-			if b.flags&ToggleButton != 0 {
+			if b.flags&ToggleButtonType != 0 {
 				b.pushed = !b.pushed
 			} else {
 				b.pushed = true
@@ -210,7 +222,7 @@ func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 			if b.Contains(x, y) && b.callback != nil {
 				b.callback()
 			}
-			if b.flags&NormalButton != 0 {
+			if b.flags&NormalButtonType != 0 {
 				b.pushed = false
 			}
 		}
@@ -315,14 +327,7 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 	textPosX := centerX - tw*0.5
 	textPosY := centerY - 1.0
 
-	var textColor nanovgo.Color
-	if !b.enabled {
-		textColor = b.theme.DisabledTextColor
-	} else if b.textColor.A == 0.0 {
-		textColor = b.theme.TextColor
-	} else {
-		textColor = b.textColor
-	}
+	textColor := b.TextColor()
 	if b.icon > 0 || b.imageIcon > 0 {
 		var iw, ih float32
 		if b.icon > 0 {
@@ -346,7 +351,7 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 		switch b.iconPosition {
 		case LeftCentered:
 			iconPosX -= (tw + iw) * 0.5
-			textPosX += tw * 0.5
+			textPosX += iw * 0.5
 		case RightCentered:
 			iconPosX -= iw * 0.5
 			textPosX += tw * 0.5

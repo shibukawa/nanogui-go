@@ -73,7 +73,7 @@ func InitWidget(child, parent Widget) {
 	child.SetFontSize(-1)
 	//w.cursor = Arrow
 	if parent != nil {
-		parent.AddChild(child)
+		parent.AddChild(parent, child)
 		child.SetTheme(parent.Theme())
 	}
 }

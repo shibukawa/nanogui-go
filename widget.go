@@ -38,7 +38,7 @@ type Widget interface {
 	VisibleRecursive() bool
 	ChildCount() int
 	Children() []Widget
-	AddChild(w Widget)
+	AddChild(self, w Widget)
 	RemoveChildByIndex(i int)
 	RemoveChild(w Widget)
 	FindWindow() *Window
@@ -241,9 +241,9 @@ func (w *WidgetImplement) Children() []Widget {
 // This function almost never needs to be called by hand,
 // since the constructor of \ref Widget automatically
 // adds the current widget to its parent
-func (w *WidgetImplement) AddChild(child Widget) {
+func (w *WidgetImplement) AddChild(self, child Widget) {
 	w.children = append(w.children, child)
-	child.SetParent(w)
+	child.SetParent(self)
 }
 
 // RemoveChildByIndex() removes a child widget by index
@@ -266,6 +266,7 @@ func (wg *WidgetImplement) RemoveChild(w Widget) {
 // Window() walks up the hierarchy and return the parent window
 func (w *WidgetImplement) FindWindow() *Window {
 	parent := w.Parent()
+	fmt.Println(parent.String())
 	if parent == nil {
 		panic("Widget:internal error (could not find parent window)")
 	}

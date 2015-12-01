@@ -13,7 +13,7 @@ type Popup struct {
 	anchorHeight int
 }
 
-func newPopup(parent Widget, parentWindow *Window) *Popup {
+func NewPopup(parent Widget, parentWindow *Window) *Popup {
 	popup := &Popup{
 		parentWindow: parentWindow,
 		anchorHeight: 30,

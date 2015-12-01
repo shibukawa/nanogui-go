@@ -12,11 +12,11 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"strings"
-	"os"
-	"time"
 	"io/ioutil"
+	"os"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 func bindataRead(data []byte, name string) ([]byte, error) {
@@ -45,9 +45,9 @@ type asset struct {
 }
 
 type bindataFileInfo struct {
-	name string
-	size int64
-	mode os.FileMode
+	name    string
+	size    int64
+	mode    os.FileMode
 	modTime time.Time
 }
 
@@ -86,7 +86,7 @@ func fontsRobotoBoldTtf() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "fonts/Roboto-Bold.ttf", size: 135820, mode: os.FileMode(420), modTime: time.Unix(1448372897, 0)}
-	a := &asset{bytes: bytes, info:  info}
+	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
@@ -106,7 +106,7 @@ func fontsRobotoRegularTtf() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "fonts/Roboto-Regular.ttf", size: 145348, mode: os.FileMode(420), modTime: time.Unix(1448372897, 0)}
-	a := &asset{bytes: bytes, info:  info}
+	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
@@ -126,7 +126,7 @@ func fontsEntypoTtf() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "fonts/entypo.ttf", size: 75800, mode: os.FileMode(416), modTime: time.Unix(1448802609, 0)}
-	a := &asset{bytes: bytes, info:  info}
+	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
 
@@ -149,7 +149,7 @@ func Asset(name string) ([]byte, error) {
 // It simplifies safe initialization of global variables.
 func MustAsset(name string) []byte {
 	a, err := Asset(name)
-	if (err != nil) {
+	if err != nil {
 		panic("asset: Asset(" + name + "): " + err.Error())
 	}
 
@@ -182,9 +182,9 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"fonts/Roboto-Bold.ttf": fontsRobotoBoldTtf,
+	"fonts/Roboto-Bold.ttf":    fontsRobotoBoldTtf,
 	"fonts/Roboto-Regular.ttf": fontsRobotoRegularTtf,
-	"fonts/entypo.ttf": fontsEntypoTtf,
+	"fonts/entypo.ttf":         fontsEntypoTtf,
 }
 
 // AssetDir returns the file names below a certain
@@ -223,64 +223,61 @@ func AssetDir(name string) ([]string, error) {
 }
 
 type bintree struct {
-	Func func() (*asset, error)
+	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"fonts": &bintree{nil, map[string]*bintree{
-		"Roboto-Bold.ttf": &bintree{fontsRobotoBoldTtf, map[string]*bintree{
-		}},
-		"Roboto-Regular.ttf": &bintree{fontsRobotoRegularTtf, map[string]*bintree{
-		}},
-		"entypo.ttf": &bintree{fontsEntypoTtf, map[string]*bintree{
-		}},
+		"Roboto-Bold.ttf":    &bintree{fontsRobotoBoldTtf, map[string]*bintree{}},
+		"Roboto-Regular.ttf": &bintree{fontsRobotoRegularTtf, map[string]*bintree{}},
+		"entypo.ttf":         &bintree{fontsEntypoTtf, map[string]*bintree{}},
 	}},
 }}
 
 // RestoreAsset restores an asset under the given directory
 func RestoreAsset(dir, name string) error {
-        data, err := Asset(name)
-        if err != nil {
-                return err
-        }
-        info, err := AssetInfo(name)
-        if err != nil {
-                return err
-        }
-        err = os.MkdirAll(_filePath(dir, filepath.Dir(name)), os.FileMode(0755))
-        if err != nil {
-                return err
-        }
-        err = ioutil.WriteFile(_filePath(dir, name), data, info.Mode())
-        if err != nil {
-                return err
-        }
-        err = os.Chtimes(_filePath(dir, name), info.ModTime(), info.ModTime())
-        if err != nil {
-                return err
-        }
-        return nil
+	data, err := Asset(name)
+	if err != nil {
+		return err
+	}
+	info, err := AssetInfo(name)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(_filePath(dir, filepath.Dir(name)), os.FileMode(0755))
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(_filePath(dir, name), data, info.Mode())
+	if err != nil {
+		return err
+	}
+	err = os.Chtimes(_filePath(dir, name), info.ModTime(), info.ModTime())
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // RestoreAssets restores an asset under the given directory recursively
 func RestoreAssets(dir, name string) error {
-        children, err := AssetDir(name)
-        // File
-        if err != nil {
-                return RestoreAsset(dir, name)
-        }
-        // Dir
-        for _, child := range children {
-                err = RestoreAssets(dir, filepath.Join(name, child))
-                if err != nil {
-                        return err
-                }
-        }
-        return nil
+	children, err := AssetDir(name)
+	// File
+	if err != nil {
+		return RestoreAsset(dir, name)
+	}
+	// Dir
+	for _, child := range children {
+		err = RestoreAssets(dir, filepath.Join(name, child))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func _filePath(dir, name string) string {
-        cannonicalName := strings.Replace(name, "\\", "/", -1)
-        return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
+	cannonicalName := strings.Replace(name, "\\", "/", -1)
+	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
