@@ -100,7 +100,7 @@ func (w *Window) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 
 func (w *Window) MouseDragEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
 	if w.drag && (button&1<<uint(glfw.MouseButton1)) != 0 {
-		pW, pH := w.Parent().Size()
+		pW, pH := self.Parent().Size()
 		w.x = clampI(w.x+relX, 0, pW-w.w)
 		w.y = clampI(w.y+relY, 0, pH-w.h)
 		return true

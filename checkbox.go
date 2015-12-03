@@ -1,6 +1,7 @@
 package nanogui
 
 import (
+	"fmt"
 	"github.com/goxjs/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -124,4 +125,8 @@ func (c *CheckBox) Draw(ctx *nanovgo.Context) {
 		ctx.SetTextAlign(nanovgo.AlignCenter | nanovgo.AlignMiddle)
 		ctx.Text(cx+ch*0.5+1.0, cy+ch*0.5, string([]rune{rune(IconCheck)}))
 	}
+}
+
+func (c *CheckBox) String() string {
+	return fmt.Sprintf("CheckBox [%d,%d-%d,%d] - %s", c.x, c.y, c.w, c.h, c.caption)
 }

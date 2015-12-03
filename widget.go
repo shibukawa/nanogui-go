@@ -266,7 +266,6 @@ func (wg *WidgetImplement) RemoveChild(w Widget) {
 // Window() walks up the hierarchy and return the parent window
 func (w *WidgetImplement) FindWindow() *Window {
 	parent := w.Parent()
-	fmt.Println(parent.String())
 	if parent == nil {
 		panic("Widget:internal error (could not find parent window)")
 	}
@@ -306,11 +305,12 @@ func (w *WidgetImplement) SetFocused(f bool) {
 // RequestFocus() requests the focus to be moved to this widget
 func (w *WidgetImplement) RequestFocus(self Widget) {
 	var widget Widget = self
-	var parent Widget = widget.Parent()
+	var parent Widget = self.Parent()
 	for parent != nil {
 		widget = parent
 		parent = widget.Parent()
 	}
+	fmt.Println(widget, parent)
 	screen := widget.(*Screen)
 	screen.UpdateFocus(self)
 }
@@ -360,7 +360,9 @@ func (w *WidgetImplement) Contains(x, y int) bool {
 
 // FindWidget() determines the widget located at the given position value (recursive)
 func (w *WidgetImplement) FindWidget(self Widget, x, y int) Widget {
-	for _, child := range self.Children() {
+	children := self.Children()
+	for i := len(children) - 1; i > -1; i-- {
+		child := children[i]
 		if child.Visible() && child.Contains(x-w.x, y-w.y) {
 			return child.FindWidget(child, x-w.x, y-w.y)
 		}
@@ -373,7 +375,9 @@ func (w *WidgetImplement) FindWidget(self Widget, x, y int) Widget {
 
 // MouseButtonEvent() handles a mouse button event (default implementation: propagate to children)
 func (w *WidgetImplement) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
-	for _, child := range w.children {
+	children := self.Children()
+	for i := len(children) - 1; i > -1; i-- {
+		child := children[i]
 		if child.Visible() && child.Contains(x-w.x, y-w.y) && child.MouseButtonEvent(child, x-w.x, y-w.y, button, down, modifier) {
 			return true
 		}
@@ -386,7 +390,9 @@ func (w *WidgetImplement) MouseButtonEvent(self Widget, x, y int, button glfw.Mo
 
 // MouseMotionEvent() handles a mouse motion event (default implementation: propagate to children)
 func (w *WidgetImplement) MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
-	for _, child := range w.children {
+	children := self.Children()
+	for i := len(children) - 1; i > -1; i-- {
+		child := children[i]
 		if !child.Visible() {
 			continue
 		}
@@ -409,13 +415,15 @@ func (w *WidgetImplement) MouseDragEvent(self Widget, x, y, relX, relY int, butt
 
 // MouseEnterEvent() handles a mouse enter/leave event (default implementation: record this fact, but do nothing)
 func (w *WidgetImplement) MouseEnterEvent(self Widget, x, y int, enter bool) bool {
-	w.focused = enter
+	w.mouseFocus = enter
 	return false
 }
 
 // ScrollEvent() handles a mouse scroll event (default implementation: propagate to children)
 func (w *WidgetImplement) ScrollEvent(self Widget, x, y, relX, relY int) bool {
-	for _, child := range w.children {
+	children := self.Children()
+	for i := len(children) - 1; i > -1; i-- {
+		child := children[i]
 		if !child.Visible() {
 			continue
 		}

@@ -150,7 +150,7 @@ func (s *Screen) Initialize(window *glfw.Window, shutdownGLFWOnDestruct bool) {
 	s.mouseState = 0
 	s.modifiers = 0
 	s.dragActive = false
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 	nanoguiScreens[window] = s
 	runtime.SetFinalizer(s, func(s *Screen) {
 		delete(nanoguiScreens, window)
@@ -236,8 +236,9 @@ func (s *Screen) SetDropEventCallback(callback func(files []string) bool) {
 
 // KeyboardEvent() is a default key event handler
 func (s *Screen) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
-	if len(s.focusPath) > 0 {
-		for _, path := range s.focusPath {
+	if len(s.focusPath) > 1 {
+		for i := len(s.focusPath)-2; i > 0; i-- {
+			path := s.focusPath[i]
 			if path.Focused() && path.KeyboardEvent(path, key, scanCode, action, modifiers) {
 				return true
 			}
@@ -248,8 +249,9 @@ func (s *Screen) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action g
 
 // KeyboardCharacterEvent() is a text input event handler: codepoint is native endian UTF-32 format
 func (s *Screen) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
-	if len(s.focusPath) > 0 {
-		for _, path := range s.focusPath {
+	if len(s.focusPath) > 1 {
+		for i := len(s.focusPath)-2; i > 0; i-- {
+			path := s.focusPath[i]
 			if path.Focused() && path.KeyboardCharacterEvent(path, codePoint) {
 				return true
 			}
@@ -338,6 +340,7 @@ func (s *Screen) CenterWindow(window *Window) {
 func (s *Screen) MoveWindowToFront(window IWindow) {
 	s.RemoveChild(window)
 	s.children = append(s.children, window)
+	window.SetParent(s)
 	changed := true
 	for changed {
 		baseIndex := 0
@@ -348,8 +351,8 @@ func (s *Screen) MoveWindowToFront(window IWindow) {
 		}
 		changed = false
 		for i, child := range s.children {
-			pw := child.(*Popup)
-			if pw != nil && pw.ParentWindow() == window && i < baseIndex {
+			pw, ok := child.(*Popup)
+			if ok && pw.ParentWindow() == window && i < baseIndex {
 				s.MoveWindowToFront(pw)
 				changed = true
 				break
@@ -370,7 +373,7 @@ func (s *Screen) drawWidgets() {
 	s.pixelRatio = float32(s.fbW) / float32(s.w)
 	s.context.BeginFrame(s.w, s.h, s.pixelRatio)
 	s.Draw(s.context)
-	elapsed := LastInteraction() - s.lastInteraction
+	elapsed := GetTime() - s.lastInteraction
 
 	if elapsed > 0.5 {
 		// Draw tooltips
@@ -409,7 +412,7 @@ func (s *Screen) drawWidgets() {
 
 func (s *Screen) cursorPositionCallbackEvent(x, y float64) bool {
 	ret := false
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 
 	px := int(x) - 1
 	py := int(y) - 2
@@ -433,7 +436,7 @@ func (s *Screen) cursorPositionCallbackEvent(x, y float64) bool {
 
 func (s *Screen) mouseButtonCallbackEvent(button glfw.MouseButton, action glfw.Action, modifiers glfw.ModifierKey) bool {
 	s.modifiers = modifiers
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 
 	if len(s.focusPath) > 1 {
 		window, ok := s.focusPath[len(s.focusPath)-2].(*Window)
@@ -478,13 +481,13 @@ func (s *Screen) mouseButtonCallbackEvent(button glfw.MouseButton, action glfw.A
 }
 
 func (s *Screen) keyCallbackEvent(key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 	return s.KeyboardEvent(s, key, scanCode, action, modifiers)
 }
 
 func (s *Screen) charCallbackEvent(codePoint rune) bool {
-	s.lastInteraction = LastInteraction()
-	return s.charCallbackEvent(codePoint)
+	s.lastInteraction = GetTime()
+	return s.KeyboardCharacterEvent(s, codePoint)
 }
 
 func (s *Screen) dropCallbackEvent(fileNames []string) bool {
@@ -495,7 +498,7 @@ func (s *Screen) dropCallbackEvent(fileNames []string) bool {
 }
 
 func (s *Screen) scrollCallbackEvent(x, y float32) bool {
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 
 	if len(s.focusPath) > 1 {
 		window, ok := s.focusPath[len(s.focusPath)-2].(*Window)
@@ -519,7 +522,7 @@ func (s *Screen) resizeCallbackEvent(width, height int) bool {
 	s.fbH = fbH
 	s.w = w
 	s.h = h
-	s.lastInteraction = LastInteraction()
+	s.lastInteraction = GetTime()
 	if s.resizeEventCallback != nil {
 		return s.resizeEventCallback(fbW, fbH)
 	}

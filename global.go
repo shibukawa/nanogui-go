@@ -19,7 +19,7 @@ func Init() {
 	startTime = time.Now()
 }
 
-func LastInteraction() float32 {
+func GetTime() float32 {
 	return float32(time.Now().Sub(startTime)/time.Millisecond) * 0.001
 }
 

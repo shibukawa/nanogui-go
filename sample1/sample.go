@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/shibukawa/nanogui.go"
 	"github.com/shibukawa/nanovgo"
+	"math"
+	"github.com/goxjs/glfw"
 )
 
 type Application struct {
@@ -11,6 +13,8 @@ type Application struct {
 	progress *nanogui.ProgressBar
 	shader   *nanogui.GLShader
 }
+
+
 
 func buttonDemo(screen *nanogui.Screen) {
 	window := nanogui.NewWindow(screen, "Button demo")
@@ -61,7 +65,7 @@ func buttonDemo(screen *nanogui.Screen) {
 	nanogui.NewCheckBox(popup, "Another check box")
 }
 
-func basicWidgetsDemo(screen *nanogui.Screen) {
+func basicWidgetsDemo(screen *nanogui.Screen) *nanogui.ProgressBar {
 	window := nanogui.NewWindow(screen, "Basic widgets")
 	window.SetPosition(230, 15)
 	window.SetLayout(nanogui.NewGroupLayout())
@@ -103,6 +107,7 @@ func basicWidgetsDemo(screen *nanogui.Screen) {
 	})
 
 	nanogui.NewLabel(window, "Combo box").SetFont("sans-bold")
+	nanogui.NewComboBox(window, []string{ "Combo box item 1", "Combo box item 2", "Combo box item 3"})
 
 	nanogui.NewLabel(window, "Check box").SetFont("sans-bold")
 	cb1 := nanogui.NewCheckBox(window, "Flag 1")
@@ -116,14 +121,32 @@ func basicWidgetsDemo(screen *nanogui.Screen) {
 		fmt.Println("Check box 2 state:", checked)
 	})
 	nanogui.NewLabel(window, "Progress bar").SetFont("sans-bold")
+	progress := nanogui.NewProgressBar(window)
 
 	nanogui.NewLabel(window, "Slider and text box").SetFont("sans-bold")
+	panel := nanogui.NewWidget(window)
+	panel.SetLayout(nanogui.NewBoxLayout(nanogui.Horizontal, nanogui.Middle, 0, 20))
+	slider := nanogui.NewSlider(panel)
+	slider.SetValue(0.5)
+	slider.SetFixedWidth(80)
+	slider.SetCallback(func(value float32) {
+
+	})
+	slider.SetFinalCallback(func(value float32) {
+		fmt.Printf("Final slider value: %d\n", int(value * 100))
+	})
+	return progress
 }
 
 func miscWidgetsDemo(screen *nanogui.Screen) {
 	window := nanogui.NewWindow(screen, "Misc. widgets")
 	window.SetPosition(455, 15)
 	window.SetLayout(nanogui.NewGroupLayout())
+
+	nanogui.NewLabel(window, "Color wheel").SetFont("sans-bold")
+	nanogui.NewColorWheel(window)
+
+	nanogui.NewLabel(window, "Function graph").SetFont("sans-bold")
 }
 
 func gridDemo(screen *nanogui.Screen) {
@@ -144,11 +167,20 @@ func gridDemo(screen *nanogui.Screen) {
 	popup := popupButton.Popup()
 	popup.SetLayout(nanogui.NewGroupLayout())
 
+	colorWheel := nanogui.NewColorWheel(popup)
+	colorWheel.SetColor(popupButton.BackgroundColor())
+
 	colorButton := nanogui.NewButton(popup, "Pick")
 	colorButton.SetFixedSize(100, 25)
+	colorButton.SetBackgroundColor(colorWheel.Color())
+
+	colorWheel.SetCallback(func(color nanovgo.Color) {
+		colorButton.SetBackgroundColor(color)
+	})
 
 	colorButton.SetChangeCallback(func(pushed bool) {
 		if pushed {
+			popupButton.SetBackgroundColor(colorButton.BackgroundColor())
 			popupButton.SetPushed(false)
 		}
 	})
@@ -165,13 +197,18 @@ func selectedImageDemo(screen *nanogui.Screen) {
 }
 
 func (a *Application) init() {
+	glfw.WindowHint(glfw.Samples, 4)
 	a.screen = nanogui.NewScreen(1024, 768, "NanoGUI.Go Test", true, false)
 
 	buttonDemo(a.screen)
-	basicWidgetsDemo(a.screen)
+	a.progress = basicWidgetsDemo(a.screen)
 	selectedImageDemo(a.screen)
 	miscWidgetsDemo(a.screen)
 	gridDemo(a.screen)
+
+	a.screen.SetDrawContentsCallback(func () {
+		a.progress.SetValue(float32(math.Mod(float64(nanogui.GetTime()) / 10, 1.0)))
+	})
 
 	a.screen.DebugPrint()
 

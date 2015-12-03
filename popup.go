@@ -99,6 +99,7 @@ func (p *Popup) Draw(ctx *nanovgo.Context) {
 
 	ctx.Fill()
 
+	p.WidgetImplement.Draw(ctx)
 }
 
 // RefreshRelativePlacement is internal helper function to maintain nested window position values; overridden in \ref Popup
