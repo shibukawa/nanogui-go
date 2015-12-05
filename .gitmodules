@@ -1,0 +1,4 @@
+[submodule "gh-pages"]
+	path = gh-pages
+	url = git@github.com:shibukawa/nanogui.go
+	branch = gh-pages
