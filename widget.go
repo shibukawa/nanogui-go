@@ -247,10 +247,18 @@ func (w *WidgetImplement) AddChild(self, child Widget) {
 }
 
 // RemoveChildByIndex() removes a child widget by index
-func (w *WidgetImplement) RemoveChildByIndex(i int) {
-	child := w.children[i]
-	child.SetParent(nil)
-	w.children, w.children[len(w.children)-1] = append(w.children[:i], w.children[i+1:]...), nil
+func (w *WidgetImplement) RemoveChildByIndex(index int) {
+	w.children[index].SetParent(nil)
+	// w.children, w.children[len(w.children)-1] = append(w.children[:i], w.children[i+1:]...), nil
+	// https://github.com/gopherjs/gopherjs/issues/358
+	// The following code is work around of the above issue
+	var newChildren []Widget
+	for i, child := range w.children {
+		if i != index {
+			newChildren = append(newChildren, child)
+		}
+	}
+	w.children = newChildren
 }
 
 // RemoveChild() removes a child widget by value

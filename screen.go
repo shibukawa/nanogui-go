@@ -555,5 +555,5 @@ func (s *Screen) DebugPrint() {
 	for _, c := range s.Children() {
 		traverse(&buffer, c, 1)
 	}
-	fmt.Println(buffer.String())
+	println(buffer.String())
 }
