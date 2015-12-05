@@ -1,4 +1,4 @@
-// +build !js
+// +build js
 
 package main
 
@@ -8,9 +8,7 @@ import (
 	"github.com/shibukawa/nanogui.go"
 	"github.com/shibukawa/nanogui.go/sample1/demo"
 	"github.com/shibukawa/nanovgo"
-	"io/ioutil"
 	"math"
-	"path"
 )
 
 type Application struct {
@@ -60,20 +58,13 @@ func main() {
 
 func loadImageDirectory(ctx *nanovgo.Context, dir string) []nanogui.Image {
 	var images []nanogui.Image
-	files, err := ioutil.ReadDir(dir)
+	files, err := AssetDir("icons")
 	if err != nil {
-		panic(fmt.Sprintf("loadImageDirectory: read error %v\n", err))
+		panic(err)
 	}
 	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		ext := path.Ext(file.Name())
-		if ext != ".png" {
-			continue
-		}
-		fullPath := path.Join(dir, file.Name())
-		img := ctx.CreateImage(fullPath, 0)
+		fullPath := fmt.Sprintf("%s/%s", "icons", file)
+		img := ctx.CreateImageFromMemory(0, MustAsset(fullPath))
 		if img == 0 {
 			panic("Could not open image data!")
 		}

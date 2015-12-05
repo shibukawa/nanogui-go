@@ -1,12 +1,8 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/goxjs/gl"
 	"github.com/goxjs/glfw"
-	"github.com/shibukawa/nanovgo"
-	"io/ioutil"
-	"path"
 	"sync"
 	"time"
 )
@@ -80,31 +76,4 @@ func InitWidget(child, parent Widget) {
 		parent.AddChild(parent, child)
 		child.SetTheme(parent.Theme())
 	}
-}
-
-func LoadImageDirectory(ctx *nanovgo.Context, dir string) []Image {
-	var images []Image
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		panic(fmt.Sprintf("LoadImageDirectory: read error %v\n", err))
-	}
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		ext := path.Ext(file.Name())
-		if ext != ".png" {
-			continue
-		}
-		fullPath := path.Join(dir, file.Name())
-		img := ctx.CreateImage(fullPath, 0)
-		if img == 0 {
-			panic("Could not open image data!")
-		}
-		images = append(images, Image{
-			ImageID: img,
-			Name:    fullPath[:len(fullPath)-4],
-		})
-	}
-	return images
 }
