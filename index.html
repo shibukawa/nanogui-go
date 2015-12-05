@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NanoGUI.go &mdash; NanoGUI.go 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="NanoGUI.go 1.0 documentation" href="#" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">NanoGUI.go 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nanogui-go">
+<h1>NanoGUI.go<a class="headerlink" href="#nanogui-go" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://godoc.org/github.com/shibukawa/nanogui.go"><img src="https://godoc.org/github.com/shibukawa/nanogui.go?status.svg" /></a>
+<iframe src="/nanogui.go/demo/" width="900" height="540"></iframe><p><a class="reference external" href="/nanovgo/demo/">Full Screen</a></p>
+<p>NanoGUI.go is apure golang implementation of <a class="reference external" href="https://github.com/wjakob/nanogui">NanoGUI</a>. NanoGUI is a minimalistic GUI library for OpenGL.</p>
+<p>NanoGUI.go can run on desktops and browsers (I didn&#8217;t test on other environemnt).</p>
+<p>It uses the following components:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/goxjs/gl">OpenGL/WebGL library</a></li>
+<li><a class="reference external" href="https://github.com/goxjs/glfw">Cross platform glfw wrapper</a></li>
+<li><a class="reference external" href="https://shibukawa.github.io/nanovgo/">NanoVGo</a></li>
+</ul>
+<div class="section" id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://godoc.org/github.com/shibukawa/nanogui.go">GoDoc</a></p>
+</div>
+<div class="section" id="porting-status">
+<h2>Porting Status<a class="headerlink" href="#porting-status" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="30%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Category</th>
+<th class="head">Classes</th>
+<th class="head">Finished</th>
+<th class="head">Status</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Non-Visual types</td>
+<td>Screen</td>
+<td>X</td>
+<td>except cursor feature</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>Widget</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>GroupLayout, BoxLayout, GridLayout</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>AdvancedGridLayout</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>Theme</td>
+<td>X</td>
+<td>Entype icons, Roboto fonts included</td>
+</tr>
+<tr class="row-odd"><td>Widgets</td>
+<td>Window, Popup</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>Label</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>Button, ToolButton</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>PopupButton, ComboBox, ImagePanel, ColorPicker</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>CheckBox</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>Slider</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>ProgressBar</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>TextBox, IntBox, FloatBox</td>
+<td>X</td>
+<td>It supports Emacs key bind like MacOS X, IME not supported.</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>ImageView, Graph</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>VScrollPanel</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>&nbsp;</td>
+<td>ColorWheel</td>
+<td>X</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td>MessageDialog</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>Utitility</td>
+<td>FormHelper</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>OpenGL Helper</td>
+<td>GLShader, GLFramebuffer, Arcball</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="author">
+<h2>Author<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/shibukawa">Yoshiki Shibukawa</a></li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>NanoGUI.go is released under zlib license. But the following contents are under other licenses:</p>
+<ul class="simple">
+<li>Roboto fonts: Apatch 2 license</li>
+<li>Entypo icon: Creative Commons 4.0 BY-SA</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span>Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span>Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span>Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">NanoGUI.go</a><ul>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+<li><a class="reference internal" href="#porting-status">Porting Status</a></li>
+<li><a class="reference internal" href="#author">Author</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015, NanoGUI.go.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.3</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a></li>
+    </div>
+
+    
+
+    
+  </body>
+</html>
