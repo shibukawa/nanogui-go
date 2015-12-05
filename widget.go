@@ -41,7 +41,7 @@ type Widget interface {
 	AddChild(self, w Widget)
 	RemoveChildByIndex(i int)
 	RemoveChild(w Widget)
-	FindWindow() *Window
+	FindWindow() IWindow
 	SetID(id string)
 	ID() string
 	Enabled() bool
@@ -264,7 +264,7 @@ func (wg *WidgetImplement) RemoveChild(w Widget) {
 }
 
 // Window() walks up the hierarchy and return the parent window
-func (w *WidgetImplement) FindWindow() *Window {
+func (w *WidgetImplement) FindWindow() IWindow {
 	parent := w.Parent()
 	if parent == nil {
 		panic("Widget:internal error (could not find parent window)")
@@ -310,7 +310,6 @@ func (w *WidgetImplement) RequestFocus(self Widget) {
 		widget = parent
 		parent = widget.Parent()
 	}
-	fmt.Println(widget, parent)
 	screen := widget.(*Screen)
 	screen.UpdateFocus(self)
 }

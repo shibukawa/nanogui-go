@@ -6,14 +6,14 @@ import (
 )
 
 type Popup struct {
-	WidgetImplement
-	parentWindow *Window
+	Window
+	parentWindow IWindow
 	anchorX      int
 	anchorY      int
 	anchorHeight int
 }
 
-func NewPopup(parent Widget, parentWindow *Window) *Popup {
+func NewPopup(parent Widget, parentWindow IWindow) *Popup {
 	popup := &Popup{
 		parentWindow: parentWindow,
 		anchorHeight: 30,
@@ -49,7 +49,7 @@ func (p *Popup) SetParentWindow(w *Window) {
 }
 
 // ParentWindow() returns the parent window of the popup
-func (p *Popup) ParentWindow() *Window {
+func (p *Popup) ParentWindow() IWindow {
 	return p.parentWindow
 }
 
@@ -109,6 +109,10 @@ func (p *Popup) RefreshRelativePlacement() {
 	x, y := p.parentWindow.Position()
 	p.x = x + p.anchorX
 	p.y = y + p.anchorY - p.anchorHeight
+}
+
+func (p *Popup) FindWindow() IWindow {
+	return p
 }
 
 func (p *Popup) String() string {

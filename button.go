@@ -18,10 +18,10 @@ const (
 type ButtonIconPosition int
 
 const (
-	Left ButtonIconPosition = iota
-	LeftCentered
-	Right
-	RightCentered
+	ButtonIconLeft ButtonIconPosition = iota
+	ButtonIconLeftCentered
+	ButtonIconRight
+	ButtonIconRightCentered
 )
 
 type Button struct {
@@ -40,20 +40,20 @@ type Button struct {
 	buttonGroup     []*Button
 }
 
-func NewButton(parent Widget, labels ...string) *Button {
-	var label string
-	switch len(labels) {
+func NewButton(parent Widget, captions ...string) *Button {
+	var caption string
+	switch len(captions) {
 	case 0:
-		label = "Untitled"
+		caption = "Untitled"
 	case 1:
-		label = labels[0]
+		caption = captions[0]
 	default:
 		panic("NewButton can accept only one extra parameter (label)")
 	}
 
 	button := &Button{
-		caption:      label,
-		iconPosition: LeftCentered,
+		caption:      caption,
+		iconPosition: ButtonIconLeftCentered,
 		flags:        NormalButtonType,
 	}
 	InitWidget(button, parent)
@@ -349,15 +349,15 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 		iconPosY := centerY - 1
 
 		switch b.iconPosition {
-		case LeftCentered:
+		case ButtonIconLeftCentered:
 			iconPosX -= (tw + iw) * 0.5
 			textPosX += iw * 0.5
-		case RightCentered:
+		case ButtonIconRightCentered:
 			iconPosX -= iw * 0.5
 			textPosX += tw * 0.5
-		case Left:
+		case ButtonIconLeft:
 			iconPosX = bx + 8.0
-		case Right:
+		case ButtonIconRight:
 			iconPosX = bx + bw - iw - 8
 		}
 		if b.icon > 0 {

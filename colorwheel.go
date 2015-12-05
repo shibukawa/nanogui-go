@@ -181,7 +181,6 @@ func (c *ColorWheel) String() string {
 	return fmt.Sprintf("ColorWheel [%d,%d-%d,%d] - h:%f s:%f l:%f", c.x, c.y, c.w, c.h, c.hue, c.saturation, c.lightness)
 }
 
-
 var sinOneThird float32 = float32(math.Sin(math.Pi * 2.0 / 3.0))
 var cosOneThird float32 = float32(math.Cos(math.Pi * 2.0 / 3.0))
 var sinTwoThird float32 = float32(math.Sin(-math.Pi * 2.0 / 3.0))

@@ -44,7 +44,7 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	if runtime.GOARCH == "js" {
 		glfw.WindowHint(glfw.Hint(0x00021101), 1) // enable stencil for nanovgo
 	}
-	glfw.WindowHint(glfw.Samples, 0)
+	glfw.WindowHint(glfw.Samples, 4)
 	//glfw.WindowHint(glfw.RedBits, 8)
 	//glfw.WindowHint(glfw.GreenBits, 8)
 	//glfw.WindowHint(glfw.BlueBits, 8)
@@ -111,7 +111,7 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	})
 
 	screen.window.SetDropCallback(func(w *glfw.Window, names []string) {
-		if screen, ok := nanoguiScreens[w]; ok {
+		if screen, ok := nanoguiScreens[w]; ok && screen.dropEventCallback != nil {
 			screen.dropEventCallback(names)
 		}
 	})
@@ -123,7 +123,7 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	})
 
 	screen.window.SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
-		if screen, ok := nanoguiScreens[w]; ok {
+		if screen, ok := nanoguiScreens[w]; ok && screen.resizeEventCallback != nil {
 			screen.resizeEventCallback(width, height)
 		}
 	})
@@ -237,7 +237,7 @@ func (s *Screen) SetDropEventCallback(callback func(files []string) bool) {
 // KeyboardEvent() is a default key event handler
 func (s *Screen) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifiers glfw.ModifierKey) bool {
 	if len(s.focusPath) > 1 {
-		for i := len(s.focusPath)-2; i > 0; i-- {
+		for i := len(s.focusPath) - 2; i >= 0; i-- {
 			path := s.focusPath[i]
 			if path.Focused() && path.KeyboardEvent(path, key, scanCode, action, modifiers) {
 				return true
@@ -250,7 +250,7 @@ func (s *Screen) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action g
 // KeyboardCharacterEvent() is a text input event handler: codepoint is native endian UTF-32 format
 func (s *Screen) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
 	if len(s.focusPath) > 1 {
-		for i := len(s.focusPath)-2; i > 0; i-- {
+		for i := len(s.focusPath) - 2; i >= 0; i-- {
 			path := s.focusPath[i]
 			if path.Focused() && path.KeyboardCharacterEvent(path, codePoint) {
 				return true
@@ -286,7 +286,7 @@ func (s *Screen) ShutdownGLFWOnDestruct() bool {
 // UpdateFocus is an internal helper function
 func (s *Screen) UpdateFocus(widget Widget) {
 	for _, w := range s.focusPath {
-		if !w.Focused() {
+		if w.Focused() {
 			w.FocusEvent(w, false)
 		}
 	}

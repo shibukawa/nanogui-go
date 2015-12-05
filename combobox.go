@@ -32,7 +32,7 @@ func NewComboBox(parent Widget, items ...[]string) *ComboBox {
 	}
 	// init PopupButton member
 	combobox.chevronIcon = IconRightOpen
-	combobox.SetIconPosition(LeftCentered)
+	combobox.SetIconPosition(ButtonIconLeftCentered)
 	combobox.SetFlags(ToggleButtonType | PopupButtonType)
 	parentWindow := parent.FindWindow()
 	combobox.popup = NewPopup(parentWindow.Parent(), parentWindow)
@@ -66,9 +66,6 @@ func (c *ComboBox) SetSelectedIndex(i int) {
 
 func generateCallback(c *ComboBox, popup *Popup, i int) func() {
 	return func() {
-		fmt.Println(c.items)
-		fmt.Println(c.shortItems)
-		fmt.Println(i)
 		c.selectedIndex = i
 		c.SetCaption(c.shortItems[i])
 		c.SetPushed(false)
@@ -106,7 +103,6 @@ func (c *ComboBox) SetItems(items []string, shortItems ...[]string) {
 	popup.SetLayout(NewGroupLayout(10))
 	for i, item := range items {
 		button := NewButton(popup, item)
-		fmt.Println(button)
 		button.SetFlags(RadioButtonType)
 		button.SetCallback(generateCallback(c, popup, i))
 	}

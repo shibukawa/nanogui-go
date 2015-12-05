@@ -137,7 +137,7 @@ func (s *Slider) Draw(ctx *nanovgo.Context) {
 	ctx.Fill()
 
 	ctx.BeginPath()
-	ctx.Circle(kx, ky, kr)
+	ctx.Circle(kx, ky, kr/2)
 	ctx.SetStrokePaint(knobReversePaint)
 	ctx.SetFillColor(nanovgo.MONO(150, a3))
 	ctx.Stroke()

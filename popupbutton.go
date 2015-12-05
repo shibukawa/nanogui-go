@@ -26,7 +26,7 @@ func NewPopupButton(parent Widget, captions ...string) *PopupButton {
 		chevronIcon: IconRightOpen,
 	}
 	button.SetCaption(caption)
-	button.SetIconPosition(LeftCentered)
+	button.SetIconPosition(ButtonIconLeftCentered)
 	button.SetFlags(ToggleButtonType | PopupButtonType)
 
 	parentWindow := parent.FindWindow()

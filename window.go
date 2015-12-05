@@ -214,7 +214,7 @@ func (w *Window) Draw(ctx *nanovgo.Context) {
 	w.WidgetImplement.Draw(ctx)
 }
 
-func (w *Window) FindWindow() *Window {
+func (w *Window) FindWindow() IWindow {
 	return w
 }
 

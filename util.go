@@ -34,6 +34,12 @@ func clampF(a, min, max float32) float32 {
 	return a
 }
 
+func toB(condition bool, a, b uint8) uint8 {
+	if condition {
+		return a
+	}
+	return b
+}
 func toI(condition bool, a, b int) int {
 	if condition {
 		return a
@@ -82,4 +88,8 @@ func absF(a float32) float32 {
 		return -a
 	}
 	return a
+}
+
+func floorF(a float32) float32 {
+	return float32(math.Floor(float64(a)))
 }
