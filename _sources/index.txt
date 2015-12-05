@@ -13,7 +13,7 @@ NanoGUI.go
 
    <iframe src="/nanogui.go/demo/" width="900" height="540"></iframe>
 
-`Full Screen </nanovgo/demo/>`_
+`Full Screen </nanogui.go/demo/>`_
 
 NanoGUI.go is apure golang implementation of `NanoGUI <https://github.com/wjakob/nanogui>`_. NanoGUI is a minimalistic GUI library for OpenGL.
 
