@@ -66,6 +66,8 @@ type Widget interface {
 	FocusEvent(self Widget, f bool) bool
 	KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool
 	KeyboardCharacterEvent(self Widget, codePoint rune) bool
+	IMEPreeditEvent(self Widget, text []rune, blocks []int, focusedBlock int) bool
+	IMEStatusEvent(self Widget) bool
 	PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
 	OnPerformLayout(self Widget, ctx *nanovgo.Context)
 	Draw(ctx *nanovgo.Context)
@@ -454,6 +456,16 @@ func (w *WidgetImplement) KeyboardEvent(self Widget, key glfw.Key, scanCode int,
 
 // KeyboardCharacterEvent() handles text input (UTF-32 format) (default implementation: do nothing)
 func (w *WidgetImplement) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
+	return false
+}
+
+// IMEPreeditEvent() handles preedit text changes of IME (default implementation: do nothing)
+func (w *WidgetImplement) IMEPreeditEvent(self Widget, text []rune, blocks []int, focusedBlock int) bool {
+	return false
+}
+
+// IMEStatusEvent() handles IME status change event (default implementation: do nothing)
+func (w *WidgetImplement) IMEStatusEvent(self Widget) bool {
 	return false
 }
 

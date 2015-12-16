@@ -23,6 +23,8 @@ func (a *Application) init() {
 	glfw.WindowHint(glfw.Samples, 4)
 	a.screen = nanogui.NewScreen(1024, 768, "NanoGUI.Go Test", true, false)
 
+	a.screen.NVGContext().CreateFont("japanese", "font/GenShinGothic-P-Regular.ttf")
+
 	demo.ButtonDemo(a.screen)
 	images := loadImageDirectory(a.screen.NVGContext(), "icons")
 	imageButton, imagePanel, progressBar := demo.BasicWidgetsDemo(a.screen, images)

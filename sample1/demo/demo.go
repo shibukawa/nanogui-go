@@ -184,6 +184,15 @@ func GridDemo(screen *nanogui.Screen) {
 	window.SetLayout(layout)
 
 	{
+		nanogui.NewLabel(window, "Regular text :").SetFont("sans-bold")
+		textBox := nanogui.NewTextBox(window, "日本語")
+		textBox.SetFont("japanese")
+		textBox.SetEditable(true)
+		textBox.SetFixedSize(100, 20)
+		textBox.SetDefaultValue("0.0")
+		textBox.SetFontSize(16)
+	}
+	{
 		nanogui.NewLabel(window, "Floating point :").SetFont("sans-bold")
 		textBox := nanogui.NewTextBox(window, "50.0")
 		textBox.SetEditable(true)
@@ -193,7 +202,6 @@ func GridDemo(screen *nanogui.Screen) {
 		textBox.SetFontSize(16)
 		textBox.SetFormat(`^[-]?[0-9]*\.?[0-9]+$`)
 	}
-
 	{
 		nanogui.NewLabel(window, "Positive integer :").SetFont("sans-bold")
 		textBox := nanogui.NewTextBox(window, "50")
@@ -213,7 +221,6 @@ func GridDemo(screen *nanogui.Screen) {
 		floatBox.SetDefaultValue(0.0)
 		floatBox.SetFontSize(16)
 	}
-
 	{
 		nanogui.NewLabel(window, "Int box :").SetFont("sans-bold")
 		intBox := nanogui.NewIntBox(window, true, 50)

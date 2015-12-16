@@ -110,6 +110,18 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 		}
 	})
 
+	screen.window.SetPreeditCallback(func(w *glfw.Window, text []rune, blocks []int, focusedBlock int) {
+		if screen, ok := nanoguiScreens[w]; ok {
+			screen.preeditCallbackEvent(text, blocks, focusedBlock)
+		}
+	})
+
+	screen.window.SetIMEStatusCallback(func(w *glfw.Window) {
+		if screen, ok := nanoguiScreens[w]; ok {
+			screen.imeStatusCallbackEvent()
+		}
+	})
+
 	screen.window.SetDropCallback(func(w *glfw.Window, names []string) {
 		if screen, ok := nanoguiScreens[w]; ok && screen.dropEventCallback != nil {
 			screen.dropEventCallback(names)
@@ -260,6 +272,32 @@ func (s *Screen) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
 	return false
 }
 
+// IMEPreeditEvent() handles preedit text changes of IME (default implementation: do nothing)
+func (s *Screen) IMEPreeditEvent(self Widget, text []rune, blocks []int, focusedBlock int) bool {
+	if len(s.focusPath) > 1 {
+		for i := len(s.focusPath) - 2; i >= 0; i-- {
+			path := s.focusPath[i]
+			if path.Focused() && path.IMEPreeditEvent(path, text, blocks, focusedBlock) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// IMEStatusEvent() handles IME status change event (default implementation: do nothing)
+func (s *Screen) IMEStatusEvent(self Widget) bool {
+	if len(s.focusPath) > 1 {
+		for i := len(s.focusPath) - 2; i >= 0; i-- {
+			path := s.focusPath[i]
+			if path.Focused() && path.IMEStatusEvent(path) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // MousePosition() returns the last observed mouse position value
 func (s *Screen) MousePosition() (int, int) {
 	return s.mousePosX, s.mousePosY
@@ -359,6 +397,14 @@ func (s *Screen) MoveWindowToFront(window IWindow) {
 			}
 		}
 	}
+}
+
+func (s *Screen) PreeditCursorPos() (int, int, int) {
+	return s.window.GetPreeditCursorPos()
+}
+
+func (s *Screen) SetPreeditCursorPos(x, y, h int) {
+	s.window.SetPreeditCursorPos(x, y, h)
 }
 
 func (s *Screen) drawWidgets() {
@@ -488,6 +534,16 @@ func (s *Screen) keyCallbackEvent(key glfw.Key, scanCode int, action glfw.Action
 func (s *Screen) charCallbackEvent(codePoint rune) bool {
 	s.lastInteraction = GetTime()
 	return s.KeyboardCharacterEvent(s, codePoint)
+}
+
+func (s *Screen) preeditCallbackEvent(text []rune, blocks []int, focusedBlock int) {
+	s.lastInteraction = GetTime()
+	s.IMEPreeditEvent(s, text, blocks, focusedBlock)
+}
+
+func (s *Screen) imeStatusCallbackEvent() {
+	s.lastInteraction = GetTime()
+	s.IMEStatusEvent(s)
 }
 
 func (s *Screen) dropCallbackEvent(fileNames []string) bool {

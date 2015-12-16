@@ -19,26 +19,30 @@ const (
 type TextBox struct {
 	WidgetImplement
 
-	editable          bool
-	committed         bool
-	value             []rune
-	defaultValue      string
-	yankValue         []rune
-	alignment         TextAlignment
-	units             string
-	unitImage         int
-	format            *regexp.Regexp
-	callback          func(string) bool
-	validFormat       bool
-	valueTemp         []rune
-	cursorPos         int
-	selectionPos      int
-	mousePos          [2]int
-	mouseDownPos      [2]int
-	mouseDragPos      [2]int
-	mouseDownModifier glfw.ModifierKey
-	textOffset        float32
-	lastClick         float32
+	fontFace            string
+	editable            bool
+	committed           bool
+	value               string
+	defaultValue        string
+	yankValue           []rune
+	alignment           TextAlignment
+	units               string
+	unitImage           int
+	format              *regexp.Regexp
+	callback            func(string) bool
+	validFormat         bool
+	valueTemp           []rune
+	cursorPos           int
+	selectionPos        int
+	mousePos            [2]int
+	mouseDownPos        [2]int
+	mouseDragPos        [2]int
+	mouseDownModifier   glfw.ModifierKey
+	textOffset          float32
+	lastClick           float32
+	preeditText         []rune
+	preeditBlocks       []int
+	preeditFocusedBlock int
 }
 
 func NewTextBox(parent Widget, values ...string) *TextBox {
@@ -60,7 +64,7 @@ func NewTextBox(parent Widget, values ...string) *TextBox {
 
 func (t *TextBox) init(value string) {
 	t.committed = true
-	t.value = []rune(value)
+	t.value = value
 	t.unitImage = -1
 	t.validFormat = true
 	t.valueTemp = []rune(value)
@@ -81,11 +85,11 @@ func (t *TextBox) SetEditable(e bool) {
 }
 
 func (t *TextBox) Value() string {
-	return string(t.value)
+	return t.value
 }
 
 func (t *TextBox) SetValue(value string) {
-	t.value = []rune(value)
+	t.value = value
 }
 
 func (t *TextBox) DefaultValue() string {
@@ -120,6 +124,17 @@ func (t *TextBox) SetUnitImage(img int) {
 	t.unitImage = img
 }
 
+func (t *TextBox) Font() string {
+	if t.fontFace == "" {
+		return t.theme.FontNormal
+	}
+	return t.fontFace
+}
+
+func (t *TextBox) SetFont(fontFace string) {
+	t.fontFace = fontFace
+}
+
 func (t *TextBox) Format() string {
 	return t.format.String()
 }
@@ -137,7 +152,7 @@ func (t *TextBox) SetCallback(callback func(string) bool) {
 func (t *TextBox) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
 	t.WidgetImplement.MouseButtonEvent(self, x, y, button, down, modifier)
 
-	if t.editable && t.Focused() && button == glfw.MouseButton1 {
+	if t.editable && t.Focused() && button == glfw.MouseButton1 && len(t.preeditText) == 0 {
 		if down {
 			t.mouseDownPos = [2]int{x, y}
 			t.mouseDownModifier = modifier
@@ -185,19 +200,19 @@ func (t *TextBox) FocusEvent(self Widget, focused bool) bool {
 
 	if t.editable {
 		if focused {
-			t.valueTemp = t.value
+			t.valueTemp = []rune(t.value)
 			t.committed = false
 			t.cursorPos = 0
 		} else {
 			if t.validFormat {
 				if len(t.valueTemp) == 0 {
-					t.value = []rune(t.defaultValue)
+					t.value = t.defaultValue
 				} else {
-					t.value = t.valueTemp
+					t.value = string(t.valueTemp)
 				}
 			}
 
-			if t.callback != nil && !t.callback(string(t.value)) {
+			if t.callback != nil && !t.callback(t.value) {
 				t.value = backup
 			}
 
@@ -214,7 +229,7 @@ func (t *TextBox) FocusEvent(self Widget, focused bool) bool {
 
 func (t *TextBox) KeyboardEvent(self Widget, key glfw.Key, scanCode int, action glfw.Action, modifier glfw.ModifierKey) bool {
 	if t.editable && t.Focused() {
-		if action == glfw.Press || action == glfw.Repeat {
+		if (action == glfw.Press || action == glfw.Repeat) && len(t.preeditText) == 0 {
 			switch DetectEditAction(key, modifier) {
 			case EditActionMoveLeft:
 				if modifier == glfw.ModShift {
@@ -297,15 +312,32 @@ func (t *TextBox) KeyboardCharacterEvent(self Widget, codePoint rune) bool {
 		t.valueTemp = append(t.valueTemp[:t.cursorPos], append([]rune{codePoint}, t.valueTemp[t.cursorPos:]...)...)
 		t.cursorPos++
 		t.validFormat = len(t.valueTemp) == 0 || t.checkFormat(string(t.valueTemp))
+		t.preeditText = nil
 		return true
 	}
 	return false
 }
 
+func (t *TextBox) IMEPreeditEvent(self Widget, text []rune, blocks []int, focusedBlock int) bool {
+	t.preeditText = text
+	t.preeditBlocks = blocks
+	t.preeditFocusedBlock = focusedBlock
+	return true
+}
+
+func (t *TextBox) IMEStatusEvent(self Widget) bool {
+	if len(t.preeditText) != 0 {
+		t.valueTemp = append(append(t.valueTemp[:t.cursorPos], t.preeditText...), t.valueTemp[t.cursorPos:]...)
+		t.cursorPos += len(t.preeditText)
+		t.preeditText = nil
+	}
+	return true
+}
+
 func (t *TextBox) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	sizeH := float32(t.FontSize()) * 1.4
 
-	var unitWidth float32
+	var unitWidth, textWidth float32
 	ctx.SetFontSize(float32(t.FontSize()))
 	if t.unitImage > 0 {
 		w, h, _ := ctx.ImageSize(t.unitImage)
@@ -314,7 +346,8 @@ func (t *TextBox) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	} else if t.units != "" {
 		unitWidth, _ = ctx.TextBounds(0, 0, t.units)
 	}
-	textWidth, _ := ctx.TextBounds(0, 0, string(t.value))
+
+	textWidth, _ = ctx.TextBounds(0, 0, string(t.editingText()))
 	sizeW := sizeH + textWidth + unitWidth
 	return int(sizeW), int(sizeH)
 }
@@ -351,7 +384,7 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 	ctx.Stroke()
 
 	ctx.SetFontSize(float32(t.FontSize()))
-	ctx.SetFontFace(t.theme.FontNormal)
+	ctx.SetFontFace(t.Font())
 	drawPosX := x
 	drawPosY := y + h*0.5 + 1
 
@@ -402,19 +435,21 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 	drawPosX += t.textOffset
 
 	if t.committed {
-		ctx.TextRune(drawPosX, drawPosY, t.value)
+		ctx.Text(drawPosX, drawPosY, t.value)
 	} else {
-		_, bounds := ctx.TextBounds(drawPosX, drawPosY, string(t.valueTemp))
+		text := t.editingText()
+		textString := string(text)
+		_, bounds := ctx.TextBounds(drawPosX, drawPosY, textString)
 		lineH := bounds[3] - bounds[1]
 		// find cursor positions
-		glyphs := ctx.TextGlyphPositionsRune(drawPosX, drawPosY, t.valueTemp)
+		glyphs := ctx.TextGlyphPositionsRune(drawPosX, drawPosY, text)
 		t.updateCursor(ctx, bounds[2], glyphs)
 
 		// compute text offset
 		prevCPos := toI(t.cursorPos > 0, t.cursorPos-1, 0)
 		nextCPos := toI(t.cursorPos < len(glyphs), t.cursorPos+1, len(glyphs))
-		prevCX := t.cursorIndex2Position(prevCPos, bounds[2], glyphs)
-		nextCX := t.cursorIndex2Position(nextCPos, bounds[2], glyphs)
+		prevCX := t.textIndex2Position(prevCPos, bounds[2], glyphs)
+		nextCX := t.textIndex2Position(nextCPos, bounds[2], glyphs)
 
 		if nextCX > clipX+clipWidth {
 			t.textOffset -= nextCX - (clipX + clipWidth) + 1.0
@@ -425,18 +460,53 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 		drawPosX = oldDrawPosX + t.textOffset
 
 		// draw text with offset
-		ctx.TextRune(drawPosX, drawPosY, t.valueTemp)
-		_, bounds = ctx.TextBounds(drawPosX, drawPosY, string(t.valueTemp))
+		ctx.TextRune(drawPosX, drawPosY, text)
+		_, bounds = ctx.TextBounds(drawPosX, drawPosY, textString)
 
 		// recompute cursor position
-		glyphs = ctx.TextGlyphPositionsRune(drawPosX, drawPosY, t.valueTemp)
+		glyphs = ctx.TextGlyphPositionsRune(drawPosX, drawPosY, text)
 
-		if t.cursorPos > -1 {
-			caretX := t.cursorIndex2Position(t.cursorPos, bounds[2], glyphs)
+		var caretX float32 = -1
+		if len(t.preeditText) != 0 {
+			// draw preedit text
+			caretX = t.textIndex2Position(t.cursorPos+len(t.preeditText), bounds[2], glyphs)
+
+			offsetIndex := t.cursorPos
+			offsetX := t.textIndex2Position(t.cursorPos, bounds[2], glyphs)
+			ctx.SetStrokeColor(nanovgo.MONO(255, 160))
+			ctx.SetFillColor(nanovgo.MONO(255, 80))
+			ctx.SetStrokeWidth(2.0)
+			for i, blockLength := range t.preeditBlocks {
+				nextOffsetIndex := offsetIndex + blockLength
+				nextOffsetX := t.textIndex2Position(nextOffsetIndex, bounds[2], glyphs)
+				if i != t.preeditFocusedBlock {
+					ctx.BeginPath()
+					ctx.MoveTo(offsetX+2, drawPosY+lineH*0.5-1)
+					ctx.LineTo(nextOffsetX-2, drawPosY+lineH*0.5-1)
+					ctx.Stroke()
+				} else {
+					ctx.BeginPath()
+					ctx.Rect(offsetX, drawPosY-lineH*0.5, nextOffsetX-offsetX, lineH)
+					ctx.Fill()
+				}
+				offsetIndex = nextOffsetIndex
+				offsetX = nextOffsetX
+			}
+			screen := t.FindWindow().Parent().(*Screen)
+			oldCurX, oldCurY, oldCurH := screen.PreeditCursorPos()
+			newCurX := int(caretX)
+			newCurY := int(drawPosY - lineH*0.5)
+			newCurH := int(lineH)
+			if oldCurX != newCurX || oldCurY != newCurY || oldCurH != newCurH {
+				screen.SetPreeditCursorPos(newCurX, newCurY, newCurH)
+			}
+		} else if t.cursorPos > -1 {
+			// regular cursor and selection area
+			caretX = t.textIndex2Position(t.cursorPos, bounds[2], glyphs)
 
 			if t.selectionPos > -1 {
 				caretX2 := caretX
-				selX := t.cursorIndex2Position(t.selectionPos, bounds[2], glyphs)
+				selX := t.textIndex2Position(t.selectionPos, bounds[2], glyphs)
 
 				if caretX2 > selX {
 					selX, caretX2 = caretX2, selX
@@ -448,7 +518,8 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 				ctx.Rect(caretX2, drawPosY-lineH*0.5, selX-caretX2, lineH)
 				ctx.Fill()
 			}
-
+		}
+		if caretX > 0 {
 			// draw cursor
 			ctx.BeginPath()
 			ctx.MoveTo(caretX, drawPosY-lineH*0.5)
@@ -534,7 +605,7 @@ func (t *TextBox) updateCursor(ctx *nanovgo.Context, lastX float32, glyphs []nan
 	}
 }
 
-func (t *TextBox) cursorIndex2Position(index int, lastX float32, glyphs []nanovgo.GlyphPosition) float32 {
+func (t *TextBox) textIndex2Position(index int, lastX float32, glyphs []nanovgo.GlyphPosition) float32 {
 	if index == len(glyphs) {
 		return lastX
 	}
@@ -560,8 +631,17 @@ func (t *TextBox) position2CursorIndex(posX, lastX float32, glyphs []nanovgo.Gly
 	return cursorIndex
 }
 
+func (t *TextBox) editingText() []rune {
+	if len(t.preeditText) == 0 {
+		return t.valueTemp
+	}
+	result := make([]rune, 0, len(t.valueTemp)+len(t.preeditText))
+	result = append(append(append(result, t.valueTemp[:t.cursorPos]...), t.preeditText...), t.valueTemp[t.cursorPos:]...)
+	return result
+}
+
 func (t *TextBox) String() string {
-	return fmt.Sprintf("TextBox [%d,%d-%d,%d] - %s", t.x, t.y, t.w, t.h, string(t.value))
+	return fmt.Sprintf("TextBox [%d,%d-%d,%d] - %s", t.x, t.y, t.w, t.h, t.value)
 }
 
 type IntBox struct {
@@ -594,12 +674,12 @@ func NewIntBox(parent Widget, signed bool, values ...int) *IntBox {
 }
 
 func (t *IntBox) Value() int {
-	v, _ := strconv.ParseInt(string(t.value), 10, 64)
+	v, _ := strconv.ParseInt(t.value, 10, 64)
 	return int(v)
 }
 
 func (t *IntBox) SetValue(value int) {
-	t.value = []rune(strconv.FormatInt(int64(value), 10))
+	t.value = strconv.FormatInt(int64(value), 10)
 }
 
 func (i *IntBox) DefaultValue() int {
@@ -652,7 +732,7 @@ func (t *FloatBox) Value() float64 {
 
 func (t *FloatBox) SetValue(value float64) {
 	// todo: remove trailing zero
-	t.value = []rune(strconv.FormatFloat(value, 'f', 5, 64))
+	t.value = strconv.FormatFloat(value, 'f', 5, 64)
 }
 
 func (t *FloatBox) DefaultValue() float64 {
