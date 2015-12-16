@@ -165,8 +165,8 @@ func (t *TextBox) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButto
 			}
 			t.lastClick = time
 		} else {
-			t.mouseDownPos = [2]int{-1, 1}
-			t.mouseDragPos = [2]int{-1, 1}
+			t.mouseDownPos = [2]int{-1, -1}
+			t.mouseDragPos = [2]int{-1, -1}
 		}
 		return true
 	}
@@ -494,8 +494,9 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 			}
 			screen := t.FindWindow().Parent().(*Screen)
 			oldCurX, oldCurY, oldCurH := screen.PreeditCursorPos()
-			newCurX := int(caretX)
-			newCurY := int(drawPosY - lineH*0.5)
+			absX, absY := t.Parent().AbsolutePosition()
+			newCurX := int(caretX) + absX
+			newCurY := int(drawPosY + lineH*0.5) + absY
 			newCurH := int(lineH)
 			if oldCurX != newCurX || oldCurY != newCurY || oldCurH != newCurH {
 				screen.SetPreeditCursorPos(newCurX, newCurY, newCurH)

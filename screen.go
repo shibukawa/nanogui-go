@@ -469,7 +469,7 @@ func (s *Screen) cursorPositionCallbackEvent(x, y float64) bool {
 			//s.window.SetCursor()
 		}
 	} else {
-		ax, ay := s.dragWidget.AbsolutePosition()
+		ax, ay := s.dragWidget.Parent().AbsolutePosition()
 		ret = s.dragWidget.MouseDragEvent(s.dragWidget, px-ax, py-ay, px-s.mousePosX, py-s.mousePosY, s.mouseState, s.modifiers)
 	}
 	if !ret {
