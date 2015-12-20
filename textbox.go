@@ -2,7 +2,7 @@ package nanogui
 
 import (
 	"fmt"
-	"github.com/goxjs/glfw"
+	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 	"regexp"
 	"strconv"
@@ -496,7 +496,7 @@ func (t *TextBox) Draw(ctx *nanovgo.Context) {
 			oldCurX, oldCurY, oldCurH := screen.PreeditCursorPos()
 			absX, absY := t.Parent().AbsolutePosition()
 			newCurX := int(caretX) + absX
-			newCurY := int(drawPosY + lineH*0.5) + absY
+			newCurY := int(drawPosY+lineH*0.5) + absY
 			newCurH := int(lineH)
 			if oldCurX != newCurX || oldCurY != newCurY || oldCurH != newCurH {
 				screen.SetPreeditCursorPos(newCurX, newCurY, newCurH)

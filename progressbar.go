@@ -1,6 +1,9 @@
 package nanogui
 
-import "github.com/shibukawa/nanovgo"
+import (
+	"fmt"
+	"github.com/shibukawa/nanovgo"
+)
 
 type ProgressBar struct {
 	WidgetImplement
@@ -45,4 +48,8 @@ func (p *ProgressBar) Draw(ctx *nanovgo.Context) {
 	ctx.RoundedRect(px+1, py+1, barPos, ph-2, 3)
 	ctx.SetFillPaint(barPaint)
 	ctx.Fill()
+}
+
+func (p *ProgressBar) String() string {
+	return fmt.Sprintf("ProgressBar [%d,%d-%d,%d] - %f", p.x, p.y, p.w, p.h, p.value)
 }

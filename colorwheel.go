@@ -2,7 +2,7 @@ package nanogui
 
 import (
 	"fmt"
-	"github.com/goxjs/glfw"
+	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 	"math"
 )

@@ -25,6 +25,22 @@ It uses the following components:
 * `Cross platform glfw wrapper <https://github.com/goxjs/glfw>`_
 * `NanoVGo <https://shibukawa.github.io/nanovgo/>`_
 
+Install
+-------------
+
+.. code-block:: bash
+
+   $ go get github.com/shibukawa/nanogui.go
+
+.. warning::
+
+   Current code depends on unreleased version of GLFW to support IME (now sending PR for 3.2).
+
+   Use the following packages before v3.2 would be released. If v3.2 will be released, **github.com/shibukawa/glfw\*** packages will be removed.
+
+   - **github.com/go-gl/glfw/v3.1/glfw** → **gihtub.com/shibukawa/glfw-2/v3.2/glfw**
+   - **github.com/goxjs/glfw** → **github.com/shibukawa/glfw**
+
 API Reference
 ---------------
 
@@ -43,79 +59,75 @@ Porting Status
      * Status
    - * Non-Visual types
      * Screen
-     * X
+     * ☑
      * except cursor feature
    - * 
      * Widget
-     * X
+     * ☑
      *
    - *
-     * GroupLayout, BoxLayout, GridLayout
-     * X
-     *
-   - *
-     * AdvancedGridLayout
-     *
+     * GroupLayout, BoxLayout, GridLayout, Advancedgridlayout
+     * ☑
      *
    - *
      * Theme
-     * X
+     * ☑
      * Entype icons, Roboto fonts included
    - * Widgets
      * Window, Popup
-     * X
+     * ☑
      *
    - *
      * Label
-     * X
+     * ☑
      *
    - *
      * Button, ToolButton
-     * X
+     * ☑
      *
    - * 
      * PopupButton, ComboBox, ImagePanel, ColorPicker
-     * X
+     * ☑
      *
    - *
      * CheckBox
-     * X
+     * ☑
      *
    - *
      * Slider
-     * X
+     * ☑
      *
    - *
      * ProgressBar
-     * X
+     * ☑
      *
    - * 
      * TextBox, IntBox, FloatBox
-     * X
+     * ☑
      * It supports Emacs key bind like MacOS X, IME not supported.
    - *
      * ImageView, Graph
-     * X
+     * ☑
      *
    - *
      * VScrollPanel
-     * X
+     * ☑
      *
    - *
      * ColorWheel
-     * X
+     * ☑
      *
    - *
      * MessageDialog
-     *
+     * ☐
      *
    - * Utitility
      * FormHelper
-     *
+     * ☐
      *
    - * OpenGL Helper
      * GLShader, GLFramebuffer, Arcball
-     *
+     * ☐
      *
 
 Author

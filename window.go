@@ -2,7 +2,7 @@ package nanogui
 
 import (
 	"fmt"
-	"github.com/goxjs/glfw"
+	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -12,6 +12,7 @@ type Window struct {
 	buttonPanel Widget
 	modal       bool
 	drag        bool
+	draggable   bool
 }
 
 type IWindow interface {
@@ -24,7 +25,8 @@ func NewWindow(parent Widget, title string) *Window {
 		title = "Untitled"
 	}
 	window := &Window{
-		title: title,
+		title:     title,
+		draggable: true,
 	}
 	InitWidget(window, parent)
 	return window
@@ -48,6 +50,14 @@ func (w *Window) Modal() bool {
 // SetModal() set whether or not this is a modal dialog
 func (w *Window) SetModal(m bool) {
 	w.modal = m
+}
+
+func (w *Window) Draggable() bool {
+	return w.draggable
+}
+
+func (w *Window) SetDraggable(flag bool) {
+	w.draggable = flag
 }
 
 func (w *Window) ButtonPanel() Widget {
@@ -91,7 +101,7 @@ func (w *Window) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton
 	if w.WidgetImplement.MouseButtonEvent(self, x, y, button, down, modifier) {
 		return true
 	}
-	if button == glfw.MouseButton1 {
+	if button == glfw.MouseButton1 && w.draggable {
 		w.drag = down && (y-w.y) < w.theme.WindowHeaderHeight
 		return true
 	}
