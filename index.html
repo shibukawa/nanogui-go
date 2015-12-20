@@ -57,6 +57,21 @@
 <li><a class="reference external" href="https://github.com/goxjs/glfw">Cross platform glfw wrapper</a></li>
 <li><a class="reference external" href="https://shibukawa.github.io/nanovgo/">NanoVGo</a></li>
 </ul>
+<div class="section" id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>go get github.com/shibukawa/nanogui.go
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p>Current code depends on unreleased version of GLFW to support IME (now sending PR for 3.2).</p>
+<p>Use the following packages before v3.2 would be released. If v3.2 will be released, <strong>github.com/shibukawa/glfw*</strong> packages will be removed.</p>
+<ul class="last simple">
+<li><strong>github.com/go-gl/glfw/v3.1/glfw</strong> → <strong>gihtub.com/shibukawa/glfw-2/v3.2/glfw</strong></li>
+<li><strong>github.com/goxjs/glfw</strong> → <strong>github.com/shibukawa/glfw</strong></li>
+</ul>
+</div>
+</div>
 <div class="section" id="api-reference">
 <h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h2>
 <p>See <a class="reference external" href="https://godoc.org/github.com/shibukawa/nanogui.go">GoDoc</a></p>
@@ -89,86 +104,81 @@
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>&nbsp;</td>
-<td>GroupLayout, BoxLayout, GridLayout</td>
+<td>GroupLayout, BoxLayout, GridLayout, Advancedgridlayout</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
 <tr class="row-odd"><td>&nbsp;</td>
-<td>AdvancedGridLayout</td>
-<td>&nbsp;</td>
-<td>&nbsp;</td>
-</tr>
-<tr class="row-even"><td>&nbsp;</td>
 <td>Theme</td>
 <td>☑</td>
 <td>Entype icons, Roboto fonts included</td>
 </tr>
-<tr class="row-odd"><td>Widgets</td>
+<tr class="row-even"><td>Widgets</td>
 <td>Window, Popup</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>Label</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-even"><td>&nbsp;</td>
 <td>Button, ToolButton</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>PopupButton, ComboBox, ImagePanel, ColorPicker</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-even"><td>&nbsp;</td>
 <td>CheckBox</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>Slider</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-even"><td>&nbsp;</td>
 <td>ProgressBar</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>TextBox, IntBox, FloatBox</td>
 <td>☑</td>
 <td>It supports Emacs key bind like MacOS X, IME not supported.</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-even"><td>&nbsp;</td>
 <td>ImageView, Graph</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>VScrollPanel</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>&nbsp;</td>
+<tr class="row-even"><td>&nbsp;</td>
 <td>ColorWheel</td>
 <td>☑</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td>MessageDialog</td>
 <td>☐</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>Utitility</td>
+<tr class="row-even"><td>Utitility</td>
 <td>FormHelper</td>
 <td>☐</td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-even"><td>OpenGL Helper</td>
+<tr class="row-odd"><td>OpenGL Helper</td>
 <td>GLShader, GLFramebuffer, Arcball</td>
 <td>☐</td>
 <td>&nbsp;</td>
@@ -209,6 +219,7 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">NanoGUI.go</a><ul>
+<li><a class="reference internal" href="#install">Install</a></li>
 <li><a class="reference internal" href="#api-reference">API Reference</a></li>
 <li><a class="reference internal" href="#porting-status">Porting Status</a></li>
 <li><a class="reference internal" href="#author">Author</a></li>
