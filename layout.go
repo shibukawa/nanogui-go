@@ -1,6 +1,7 @@
 package nanogui
 
 import (
+	"fmt"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -107,8 +108,14 @@ func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 	axis2 := (int(b.orientation) + 1) % 2
 	position := b.margin
 
+	var yOffset int
+
 	if _, ok := widget.(*Window); ok {
-		position += widget.Theme().WindowHeaderHeight - b.margin/2
+		if b.orientation == Vertical {
+			position += widget.Theme().WindowHeaderHeight - b.margin/2
+		} else {
+			yOffset = widget.Theme().WindowHeaderHeight
+		}
 	}
 	first := true
 	for _, child := range widget.Children() {
@@ -135,21 +142,22 @@ func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 			targetSize[1] = pY
 		}
 		var pos [2]int
+		pos[1] = yOffset
 		pos[axis1] = position
 
 		switch b.alignment {
 		case Minimum:
-			pos[axis2] = b.margin
+			pos[axis2] += b.margin
 		case Middle:
-			pos[axis2] = (containerSize[axis2] - targetSize[axis2]) / 2
+			pos[axis2] += (containerSize[axis2] - yOffset - targetSize[axis2]) / 2
 		case Maximum:
-			pos[axis2] = containerSize[axis2] - targetSize[axis2] - b.margin
+			pos[axis2] += containerSize[axis2] - yOffset - targetSize[axis2] - b.margin*2
 		case Fill:
-			pos[axis2] = b.margin
+			pos[axis2] += b.margin
 			if fs[axis2] > 0 {
 				targetSize[axis2] = fs[axis2]
 			} else {
-				targetSize[axis2] = containerSize[axis2]
+				targetSize[axis2] = containerSize[axis2] - yOffset - b.margin*2
 			}
 		}
 		child.SetPosition(pos[0], pos[1])
@@ -162,8 +170,13 @@ func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 func (b *BoxLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int) {
 	size := []int{2 * b.margin, 2 * b.margin}
 
+	axis2Offset := 0
 	if _, ok := widget.(*Window); ok {
-		size[1] += widget.Theme().WindowHeaderHeight - b.margin/2
+		if b.orientation == Vertical {
+			size[1] += widget.Theme().WindowHeaderHeight - b.margin/2
+		} else {
+			axis2Offset = widget.Theme().WindowHeaderHeight
+		}
 	}
 
 	first := true
@@ -194,7 +207,7 @@ func (b *BoxLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int
 			targetSize[1] = pY
 		}
 		size[axis1] += targetSize[axis1]
-		size[axis2] = maxI(size[axis2], targetSize[axis2]+2*b.margin)
+		size[axis2] = maxI(size[axis2], targetSize[axis2]+2*b.margin+axis2Offset)
 	}
 	return size[0], size[1]
 }
@@ -498,7 +511,7 @@ func (g *GridLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 	}
 
 	/* Compute minimum row / column sizes */
-	grid := g.ComputeLayout(widget, ctx)
+	grid := g.computeLayout(widget, ctx)
 	dim := []int{len(grid[0]), len(grid[1])}
 
 	extra := []int{0, 0}
@@ -585,7 +598,7 @@ func (g *GridLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 }
 
 func (g *GridLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int) {
-	grid := g.ComputeLayout(widget, ctx)
+	grid := g.computeLayout(widget, ctx)
 
 	w := g.margin*2 + maxI(len(grid[0])-1, 0)*g.spacing[0]
 	for _, v := range grid[0] {
@@ -601,7 +614,7 @@ func (g *GridLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, in
 	return w, h
 }
 
-func (g *GridLayout) ComputeLayout(widget Widget, ctx *nanovgo.Context) [][]int {
+func (g *GridLayout) computeLayout(widget Widget, ctx *nanovgo.Context) [][]int {
 	axis1 := int(g.orientation)
 	axis2 := (int(g.orientation) + 1) % 2
 	numChildren := widget.ChildCount()
@@ -645,4 +658,310 @@ func (g *GridLayout) ComputeLayout(widget Widget, ctx *nanovgo.Context) [][]int 
 		}
 	}
 	return grid
+}
+
+type Anchor struct {
+	pos   [2]uint8
+	size  [2]uint8
+	align [2]Alignment
+}
+
+func NewAnchor(x, y int, aligns ...Alignment) Anchor {
+	a := Anchor{
+		pos:  [2]uint8{uint8(x), uint8(y)},
+		size: [2]uint8{1, 1},
+	}
+	switch len(aligns) {
+	case 0:
+		a.align[0] = Fill
+		a.align[1] = Fill
+	case 1:
+		a.align[0] = aligns[0]
+		a.align[1] = Fill
+	case 2:
+		a.align[0] = aligns[0]
+		a.align[1] = aligns[1]
+	default:
+		panic("NewAnchor can accept extra parameter upto 2 (hAlign, vAlign).")
+	}
+	return a
+}
+
+func NewAnchorWithSize(x, y, w, h int, aligns ...Alignment) Anchor {
+	a := Anchor{
+		pos:  [2]uint8{uint8(x), uint8(y)},
+		size: [2]uint8{uint8(x), uint8(y)},
+	}
+	switch len(aligns) {
+	case 0:
+		a.align[0] = Fill
+		a.align[1] = Fill
+	case 1:
+		a.align[0] = aligns[0]
+		a.align[1] = Fill
+	case 2:
+		a.align[0] = aligns[0]
+		a.align[1] = aligns[1]
+	default:
+		panic("NewAnchorWithSize can accept extra parameter upto 2 (hAlign, vAlign).")
+	}
+	return a
+}
+
+func (a *Anchor) String() string {
+	return fmt.Sprintf("Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
+		a.pos[0], a.pos[1], a.size[0], a.size[1], int(a.align[0]), int(a.align[1]))
+}
+
+type AdvancedGridLayout struct {
+	cols       []int
+	rows       []int
+	colStretch []float32
+	rowStretch []float32
+	anchors    map[Widget]Anchor
+	margin     int
+}
+
+func NewAdvancedGridLayout(sizes ...[]int) *AdvancedGridLayout {
+	var rows []int
+	var cols []int
+	switch len(sizes) {
+	case 0:
+	case 1:
+		cols = sizes[0]
+	case 2:
+		cols = sizes[0]
+		rows = sizes[1]
+	default:
+		panic("NewBoxLayout can accept extra parameter upto 2 (cols, rows).")
+	}
+	return &AdvancedGridLayout{
+		cols:       cols,
+		rows:       rows,
+		colStretch: make([]float32, len(cols)),
+		rowStretch: make([]float32, len(rows)),
+		anchors:    make(map[Widget]Anchor),
+	}
+}
+
+func (a *AdvancedGridLayout) Margin() int {
+	return a.margin
+}
+
+func (a *AdvancedGridLayout) SetMargin(m int) {
+	a.margin = m
+}
+
+func (a *AdvancedGridLayout) ColCount() int {
+	return len(a.cols)
+}
+
+func (a *AdvancedGridLayout) RowCount() int {
+	return len(a.rows)
+}
+
+func (a *AdvancedGridLayout) AppendCol(size int, defaultStretch ...float32) {
+	var stretch float32
+	switch len(defaultStretch) {
+	case 0:
+	case 1:
+		stretch = defaultStretch[0]
+	default:
+		panic("AppendCol can accept only one extra parameter(stretch).")
+	}
+	a.cols = append(a.cols, size)
+	a.colStretch = append(a.colStretch, stretch)
+}
+
+func (a *AdvancedGridLayout) AppendRow(size int, defaultStretch ...float32) {
+	var stretch float32
+	switch len(defaultStretch) {
+	case 0:
+	case 1:
+		stretch = defaultStretch[0]
+	default:
+		panic("AppendRow can accept only one extra parameter(stretch).")
+	}
+	a.rows = append(a.rows, size)
+	a.rowStretch = append(a.rowStretch, stretch)
+}
+
+func (a *AdvancedGridLayout) SetRowStretch(index int, stretch float32) {
+	a.rowStretch[index] = stretch
+}
+
+func (a *AdvancedGridLayout) SetColStretch(index int, stretch float32) {
+	a.colStretch[index] = stretch
+}
+
+func (a *AdvancedGridLayout) SetAnchor(widget Widget, anchor Anchor) {
+	a.anchors[widget] = anchor
+}
+
+func (a *AdvancedGridLayout) Anchor(widget Widget) Anchor {
+	return a.anchors[widget]
+}
+
+func (a *AdvancedGridLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
+	grid := a.computeLayout(widget, ctx)
+	grid[0] = append([]int{a.margin}, grid[0]...)
+	if _, ok := widget.(*Window); ok {
+		grid[1] = append([]int{widget.Theme().WindowHeaderHeight + a.margin/2}, grid[1]...)
+	} else {
+		grid[1] = append([]int{a.margin}, grid[1]...)
+	}
+	for axis := 0; axis < 2; axis++ {
+		for i := 1; i < len(grid[axis]); i++ {
+			grid[axis][i] += grid[axis][i-1]
+		}
+		for _, w := range widget.Children() {
+			if !w.Visible() {
+				continue
+			}
+			anchor := a.Anchor(w)
+			itemPos := grid[axis][anchor.pos[axis]]
+			cellSize := grid[axis][anchor.pos[axis]+anchor.size[axis]] - itemPos
+			pw, ph := w.PreferredSize(w, ctx)
+			fw, fh := w.FixedSize()
+			var targetSize int
+			if axis == 0 {
+				targetSize = toI(fw > 0, fw, pw)
+			} else {
+				targetSize = toI(fh > 0, fh, ph)
+			}
+			switch anchor.align[axis] {
+			case Minimum:
+			case Middle:
+				itemPos += (cellSize - targetSize) / 2
+			case Maximum:
+				itemPos += cellSize - targetSize
+			case Fill:
+				if axis == 0 {
+					targetSize = toI(fw > 0, fw, cellSize)
+				} else {
+					targetSize = toI(fh > 0, fh, cellSize)
+				}
+			}
+			posX, posY := w.Position()
+			sizeW, sizeH := w.Size()
+			if axis == 0 {
+				posX = itemPos
+				sizeW = targetSize
+			} else {
+				posY = itemPos
+				sizeH = targetSize
+			}
+			w.SetPosition(posX, posY)
+			w.SetSize(sizeW, sizeH)
+			w.OnPerformLayout(w, ctx)
+		}
+	}
+}
+
+func (a *AdvancedGridLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int) {
+	grid := a.computeLayout(widget, ctx)
+	sizeW := a.margin * 2
+	sizeH := a.margin * 2
+	for _, size := range grid[0] {
+		sizeW += size
+	}
+	for _, size := range grid[1] {
+		sizeH += size
+	}
+	if _, ok := widget.(*Window); ok {
+		sizeH += widget.Theme().WindowHeaderHeight - a.margin/2
+	}
+	return sizeW, sizeH
+}
+
+func (a *AdvancedGridLayout) computeLayout(widget Widget, ctx *nanovgo.Context) [][]int {
+	var grids [][]int = [][]int{[]int{}, []int{}}
+	fw, fh := widget.FixedSize()
+	containerW := toI(fw > 0, fw, widget.Width())
+	containerH := toI(fh > 0, fh, widget.Height())
+
+	extraX := 2 * a.margin
+	extraY := 2 * a.margin
+
+	if _, ok := widget.(*Window); ok {
+		extraY += widget.Theme().WindowHeaderHeight - a.margin/2
+	}
+
+	containerW -= extraX
+	containerH -= extraY
+
+	for axis := 0; axis < 2; axis++ {
+		var sizes []int
+		var stretch []float32
+		if axis == 0 {
+			sizes = a.cols
+			stretch = a.colStretch
+		} else {
+			sizes = a.rows
+			stretch = a.rowStretch
+		}
+		grid := make([]int, len(sizes))
+		copy(grid, sizes)
+		grids[axis] = grid
+
+		for phase := 0; phase < 2; phase++ {
+			for widget, anchor := range a.anchors {
+				if !widget.Visible() {
+					continue
+				}
+				if (anchor.size[axis]) == 1 != (phase == 0) {
+					continue
+				}
+				pw, ph := widget.PreferredSize(widget, ctx)
+				ps := toI(axis == 0, pw, ph)
+				fw, fh := widget.FixedSize()
+				fs := toI(axis == 0, fw, fh)
+				targetSize := toI(fs > 0, fs, ps)
+				if int(anchor.pos[axis])+int(anchor.size[axis]) > len(grid) {
+					panic("Advanced grid layout: widget is out of bounds: " + anchor.String())
+				}
+				currentSize := 0
+				var totalStretch float32
+				for i := anchor.pos[axis]; i < anchor.pos[axis]+anchor.size[axis]; i++ {
+					if sizes[i] == 0 && anchor.size[axis] == 1 {
+						grid[i] = maxI(grid[i], targetSize)
+					}
+					currentSize += grid[i]
+					totalStretch += stretch[i]
+				}
+				if targetSize <= currentSize {
+					continue
+				}
+				if totalStretch == 0 {
+					panic("Advanced grid layout: no space to place widget: " + anchor.String())
+				}
+				var amt float32 = float32(targetSize-currentSize) / totalStretch
+				for i := anchor.pos[axis]; i < anchor.pos[axis]+anchor.size[axis]; i++ {
+					grid[i] += int(amt * stretch[i])
+				}
+			}
+		}
+		var currentSize int
+		for _, val := range grid {
+			currentSize += val
+		}
+		var totalStretch float32
+		for _, val := range stretch {
+			totalStretch += val
+		}
+		var containerSize float32
+		if axis == 0 {
+			containerSize = float32(containerW)
+		} else {
+			containerSize = float32(containerH)
+		}
+		if float32(currentSize) >= containerSize || totalStretch == 0 {
+			continue
+		}
+		amt := (containerSize - float32(currentSize)) / totalStretch
+		for i := range grid {
+			grid[i] += int(amt*stretch[i] + 0.5)
+		}
+	}
+	return grids
 }
