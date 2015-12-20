@@ -43,15 +43,15 @@ Porting Status
      * Status
    - * Non-Visual types
      * Screen
-     * X
+     * ☑
      * except cursor feature
    - * 
      * Widget
-     * X
+     * ☑
      *
    - *
      * GroupLayout, BoxLayout, GridLayout
-     * X
+     * ☑
      *
    - *
      * AdvancedGridLayout
@@ -59,63 +59,63 @@ Porting Status
      *
    - *
      * Theme
-     * X
+     * ☑
      * Entype icons, Roboto fonts included
    - * Widgets
      * Window, Popup
-     * X
+     * ☑
      *
    - *
      * Label
-     * X
+     * ☑
      *
    - *
      * Button, ToolButton
-     * X
+     * ☑
      *
    - * 
      * PopupButton, ComboBox, ImagePanel, ColorPicker
-     * X
+     * ☑
      *
    - *
      * CheckBox
-     * X
+     * ☑
      *
    - *
      * Slider
-     * X
+     * ☑
      *
    - *
      * ProgressBar
-     * X
+     * ☑
      *
    - * 
      * TextBox, IntBox, FloatBox
-     * X
+     * ☑
      * It supports Emacs key bind like MacOS X, IME not supported.
    - *
      * ImageView, Graph
-     * X
+     * ☑
      *
    - *
      * VScrollPanel
-     * X
+     * ☑
      *
    - *
      * ColorWheel
-     * X
+     * ☑
      *
    - *
      * MessageDialog
-     *
+     * ☐
      *
    - * Utitility
      * FormHelper
-     *
+     * ☐
      *
    - * OpenGL Helper
      * GLShader, GLFramebuffer, Arcball
-     *
+     * ☐
      *
 
 Author
