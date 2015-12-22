@@ -70,7 +70,6 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 		panic(err)
 	}
 	screen.window.MakeContextCurrent()
-	screen.fbW, screen.fbH = screen.window.GetFramebufferSize()
 	gl.Viewport(0, 0, screen.fbW, screen.fbH)
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT)
@@ -123,8 +122,8 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	})
 
 	screen.window.SetDropCallback(func(w *glfw.Window, names []string) {
-		if screen, ok := nanoguiScreens[w]; ok && screen.dropEventCallback != nil {
-			screen.dropEventCallback(names)
+		if screen, ok := nanoguiScreens[w]; ok {
+			screen.dropCallbackEvent(names)
 		}
 	})
 
@@ -135,8 +134,8 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	})
 
 	screen.window.SetFramebufferSizeCallback(func(w *glfw.Window, width int, height int) {
-		if screen, ok := nanoguiScreens[w]; ok && screen.resizeEventCallback != nil {
-			screen.resizeEventCallback(width, height)
+		if screen, ok := nanoguiScreens[w]; ok {
+			screen.resizeCallbackEvent(width, height)
 		}
 	})
 
@@ -580,7 +579,7 @@ func (s *Screen) resizeCallbackEvent(width, height int) bool {
 	s.h = h
 	s.lastInteraction = GetTime()
 	if s.resizeEventCallback != nil {
-		return s.resizeEventCallback(fbW, fbH)
+		return s.resizeEventCallback(int(float32(fbW) / s.pixelRatio), int(float32(fbH) / s.pixelRatio))
 	}
 	return false
 }

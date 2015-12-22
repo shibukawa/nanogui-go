@@ -19,7 +19,17 @@ func NewVScrollPanel(parent Widget) *VScrollPanel {
 	return panel
 }
 
+func (v *VScrollPanel) Scroll() float32 {
+	return v.scroll
+}
+
+func (v *VScrollPanel) SetScroll(scroll float32) {
+	v.scroll = scroll
+}
+
 func (v *VScrollPanel) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
+	v.WidgetImplement.OnPerformLayout(self, ctx)
+
 	if len(v.children) == 0 {
 		return
 	}
