@@ -71,24 +71,24 @@ func (w *Window) ButtonPanel() Widget {
 // Dispose() disposes the window
 func (w *Window) Dispose() {
 	var widget Widget = w
-	var parent Widget = widget.Parent()
+	var parent Widget = w.Parent()
 	for parent != nil {
 		widget = parent
 		parent = widget.Parent()
 	}
-	screen := parent.(*Screen)
+	screen := widget.(*Screen)
 	screen.DisposeWindow(w)
 }
 
 // Center() makes the window center in the current Screen
 func (w *Window) Center() {
 	var widget Widget = w
-	var parent Widget = widget.Parent()
+	var parent Widget = w.Parent()
 	for parent != nil {
 		widget = parent
 		parent = widget.Parent()
 	}
-	screen := parent.(*Screen)
+	screen := widget.(*Screen)
 	screen.CenterWindow(w)
 }
 

@@ -24,6 +24,7 @@ type Spinner struct {
 func NewSpinner(parent nanogui.Widget) *Spinner {
 	spinner := &Spinner{}
 	nanogui.InitWidget(spinner, parent)
+	spinner.SetVisible(false)
 
 	screen, ok := parent.(*nanogui.Screen)
 	if !ok {
@@ -107,6 +108,10 @@ func (s *Spinner) PreferredSize(self nanogui.Widget, ctx *nanovgo.Context) (int,
 func (s *Spinner) Draw(ctx *nanovgo.Context) {
 }
 
+func (s *Spinner) IsPositionAbsolute() bool {
+	return true
+}
+
 func (s *Spinner) String() string {
 	return fmt.Sprintf("Spinner")
 }
@@ -124,6 +129,10 @@ type SpinnerFilter struct {
 func (sf *SpinnerFilter) isActive() bool {
 	currentTime := nanogui.GetTime() - sf.startTime
 	return sf.state == SpinnerFadeIn || (sf.state == SpinnerFadeOut && currentTime < 1.0)
+}
+
+func (sf *SpinnerFilter) IsPositionAbsolute() bool {
+	return true
 }
 
 func (sf *SpinnerFilter) PreferredSize(self nanogui.Widget, ctx *nanovgo.Context) (int, int) {
@@ -149,7 +158,7 @@ func (sf *SpinnerFilter) Draw(ctx *nanovgo.Context) {
 			fh -= hh
 		}
 		sf.SetPosition(0, py)
-		sf.SetFixedSize(fw, fh)
+		sf.SetSize(fw, fh)
 
 		currentTime := nanogui.GetTime() - sf.startTime
 
@@ -185,13 +194,11 @@ func (sf *SpinnerFilter) Draw(ctx *nanovgo.Context) {
 				ctx.SetStrokeColor(nanovgo.MONOf(1.0, float32(i)/float32(sf.num)))
 				ctx.SetStrokeWidth(sf.lineWidth)
 				ctx.Stroke()
-				//println(cx, cy, sf.c1, sf.c2, rotation)
-				//println(cx + float32(math.Cos(rotation))*sf.c1, cy + float32(math.Sin(rotation))*sf.c1, rotation)
 				rotation += dr
 			}
 		}
 	} else {
-		sf.SetFixedSize(0, 0)
+		sf.SetSize(0, 0)
 		sf.SetVisible(false)
 		return
 	}

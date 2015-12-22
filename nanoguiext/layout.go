@@ -107,7 +107,7 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 	fixedLength := make([][2]int, widget.ChildCount())
 	remainedLength := containerSize[axis1] - position - b.margin + b.spacing
 	for i, child := range widget.Children() {
-		if child.Visible() {
+		if child.Visible() && !child.IsPositionAbsolute() {
 			childCount++
 			if _, isScroll := child.(*nanogui.VScrollPanel); !isScroll {
 				fW, fH := child.FixedSize()
@@ -131,6 +131,10 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 	}
 	for i, child := range widget.Children() {
 		if !child.Visible() {
+			continue
+		}
+		if child.IsPositionAbsolute() {
+			child.OnPerformLayout(child, ctx)
 			continue
 		}
 		var pos [2]int

@@ -28,12 +28,12 @@ func (p *Popup) SetAnchorPosition(x, y int) {
 	p.anchorY = y
 }
 
-// AnchorPosition()  Return the anchor position in the parent window; the placement of the popup is relative to it
+// AnchorPosition() returns the anchor position in the parent window; the placement of the popup is relative to it
 func (p *Popup) AnchorPosition() (int, int) {
 	return p.anchorX, p.anchorY
 }
 
-// SetAnchorHeight() set the anchor height; this determines the vertical shift relative to the anchor position
+// SetAnchorHeight() sets the anchor height; this determines the vertical shift relative to the anchor position
 func (p *Popup) SetAnchorHeight(h int) {
 	p.anchorHeight = h
 }
@@ -61,6 +61,10 @@ func (p *Popup) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 		p.children[0].SetSize(p.w, p.h)
 		p.children[0].OnPerformLayout(p.children[0], ctx)
 	}
+}
+
+func (p *Popup) IsPositionAbsolute() bool {
+	return true
 }
 
 func (p *Popup) Draw(ctx *nanovgo.Context) {

@@ -359,7 +359,7 @@ func (s *Screen) DisposeWindow(window *Window) {
 	if s.dragWidget == window {
 		s.dragWidget = nil
 	}
-	s.RemoveChild(window)
+	window.Parent().RemoveChild(window)
 }
 
 // CenterWindow is an internal helper function
@@ -370,24 +370,26 @@ func (s *Screen) CenterWindow(window *Window) {
 		window.OnPerformLayout(window, s.context)
 	}
 	x, y := window.Size()
-	window.SetPosition((s.x-x)/2, (s.y-y)/2)
+	px, py := window.Parent().Position()
+	window.SetPosition((px-x)/2, (py-y)/2)
 }
 
 // MoveWindowToFront is an internal helper function
 func (s *Screen) MoveWindowToFront(window IWindow) {
-	s.RemoveChild(window)
-	s.children = append(s.children, window)
-	window.SetParent(s)
+	parent := window.Parent()
+	parent.RemoveChild(window)
+	parent.SetChildren(append(parent.Children(), window))
+	window.SetParent(parent)
 	changed := true
 	for changed {
 		baseIndex := 0
-		for i, child := range s.children {
+		for i, child := range parent.Children() {
 			if child == window {
 				baseIndex = i
 			}
 		}
 		changed = false
-		for i, child := range s.children {
+		for i, child := range parent.Children() {
 			pw, ok := child.(*Popup)
 			if ok && pw.ParentWindow() == window && i < baseIndex {
 				s.MoveWindowToFront(pw)
@@ -579,7 +581,7 @@ func (s *Screen) resizeCallbackEvent(width, height int) bool {
 	s.h = h
 	s.lastInteraction = GetTime()
 	if s.resizeEventCallback != nil {
-		return s.resizeEventCallback(int(float32(fbW) / s.pixelRatio), int(float32(fbH) / s.pixelRatio))
+		return s.resizeEventCallback(int(float32(fbW)/s.pixelRatio), int(float32(fbH)/s.pixelRatio))
 	}
 	return false
 }

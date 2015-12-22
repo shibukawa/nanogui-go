@@ -128,18 +128,11 @@ func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 			position += b.spacing
 		}
 		var fs [2]int
-		pX, pY := child.PreferredSize(child, ctx)
+		pW, pH := child.PreferredSize(child, ctx)
 		fs[0], fs[1] = child.FixedSize()
-		var targetSize [2]int
-		if fX > 0 {
-			targetSize[0] = fs[0]
-		} else {
-			targetSize[0] = pX
-		}
-		if fY > 0 {
-			targetSize[1] = fs[1]
-		} else {
-			targetSize[1] = pY
+		targetSize := [2]int{
+			toI(fs[0] > 0, fs[0], pW),
+			toI(fs[1] > 0, fs[1], pH),
 		}
 		var pos [2]int
 		pos[1] = yOffset
@@ -193,18 +186,11 @@ func (b *BoxLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int
 			size[axis1] += b.spacing
 		}
 
-		pX, pY := child.PreferredSize(child, ctx)
-		fX, fY := child.FixedSize()
-		var targetSize [2]int
-		if fX > 0 {
-			targetSize[0] = fX
-		} else {
-			targetSize[0] = pX
-		}
-		if fY > 0 {
-			targetSize[1] = fY
-		} else {
-			targetSize[1] = pY
+		pW, pH := child.PreferredSize(child, ctx)
+		fW, fH := child.FixedSize()
+		targetSize := [2]int{
+			toI(fW > 0, fW, pW),
+			toI(fH > 0, fH, pH),
 		}
 		size[axis1] += targetSize[axis1]
 		size[axis2] = maxI(size[axis2], targetSize[axis2]+2*b.margin+axis2Offset)

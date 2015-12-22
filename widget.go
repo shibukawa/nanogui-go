@@ -21,6 +21,7 @@ type Widget interface {
 	Position() (int, int)
 	SetPosition(x, y int)
 	AbsolutePosition() (int, int)
+	IsPositionAbsolute() bool
 	Size() (int, int)
 	SetSize(w, h int)
 	Width() int
@@ -38,6 +39,7 @@ type Widget interface {
 	VisibleRecursive() bool
 	ChildCount() int
 	Children() []Widget
+	SetChildren([]Widget)
 	AddChild(self, w Widget)
 	RemoveChildByIndex(i int)
 	RemoveChild(w Widget)
@@ -144,6 +146,11 @@ func (w *WidgetImplement) AbsolutePosition() (int, int) {
 	return w.x, w.y
 }
 
+// AbsolutePosition() returns whether the the object should be skipped by layout engines.
+func (w *WidgetImplement) IsPositionAbsolute() bool {
+	return false
+}
+
 // Size() returns the size of the widget
 func (w *WidgetImplement) Size() (int, int) {
 	return w.w, w.h
@@ -239,6 +246,10 @@ func (w *WidgetImplement) Children() []Widget {
 	return w.children
 }
 
+func (w *WidgetImplement) SetChildren(children []Widget) {
+	w.children = children
+}
+
 // AddChild() adds a child widget to the current widget
 // This function almost never needs to be called by hand,
 // since the constructor of \ref Widget automatically
@@ -273,7 +284,7 @@ func (wg *WidgetImplement) RemoveChild(w Widget) {
 	}
 }
 
-// Window() walks up the hierarchy and return the parent window
+// FindWindow() walks up the hierarchy and return the parent window
 func (w *WidgetImplement) FindWindow() IWindow {
 	parent := w.Parent()
 	if parent == nil {
@@ -516,5 +527,5 @@ func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
 }
 
 func (w *WidgetImplement) String() string {
-	return fmt.Sprintf("WidgetImplement [%d,%d-%d,%d]", w.x, w.y, w.w, w.h)
+	return fmt.Sprintf("Widget [%d,%d-%d,%d]", w.x, w.y, w.w, w.h)
 }
