@@ -114,7 +114,7 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 
 	barPaint := nanovgo.BoxGradient(x+y-12-1, y+4+1+(h-8-scrollH)*v.scroll-1, 8, scrollH, 3, 4, nanovgo.MONO(220, 100), nanovgo.MONO(128, 100))
 	ctx.BeginPath()
-	ctx.RoundedRect(x+w-12+1, x+4+1+(h-8-scrollH)*v.scroll, 8-2, scrollH-2, 2)
+	ctx.RoundedRect(x+w-12+1, y+4+1+(h-8-scrollH)*v.scroll, 8-2, scrollH-2, 2)
 	ctx.SetFillPaint(barPaint)
 	ctx.Fill()
 }
