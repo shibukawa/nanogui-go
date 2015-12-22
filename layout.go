@@ -519,7 +519,7 @@ func (g *GridLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 		extra[1] = widget.Theme().WindowHeaderHeight - g.margin/2
 	}
 
-	/* Strech to size provided by widget */
+	/* Stretch to size provided by widget */
 	for i := 0; i < 2; i++ {
 		gridSize := g.margin*2 + extra[i]
 		for _, s := range grid[i] {
