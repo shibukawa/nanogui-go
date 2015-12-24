@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -120,5 +119,5 @@ func (p *Popup) FindWindow() IWindow {
 }
 
 func (p *Popup) String() string {
-	return fmt.Sprintf("Popup [%d,%d-%d,%d]", p.x, p.y, p.w, p.h)
+	return p.StringHelper("Popup", "")
 }

@@ -103,3 +103,7 @@ func (i *ImageView) Draw(ctx *nanovgo.Context) {
 	ctx.SetFillPaint(imgPaint)
 	ctx.Fill()
 }
+
+func (i *ImageView) String() string {
+	return i.StringHelper("ImageView", "")
+}

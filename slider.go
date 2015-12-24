@@ -145,5 +145,5 @@ func (s *Slider) Draw(ctx *nanovgo.Context) {
 }
 
 func (s *Slider) String() string {
-	return fmt.Sprintf("Slider [%d,%d-%d,%d] - %f", s.x, s.y, s.w, s.h, s.value)
+	return s.StringHelper("Slider", fmt.Sprintf("%f", s.value))
 }

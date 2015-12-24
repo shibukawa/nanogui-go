@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -114,7 +113,7 @@ func (i *ImagePanel) Draw(ctx *nanovgo.Context) {
 }
 
 func (i *ImagePanel) String() string {
-	return fmt.Sprintf("ImagePanel [%d,%d-%d,%d]", i.x, i.y, i.w, i.h)
+	return i.StringHelper("ImagePanel", "")
 }
 
 func (i *ImagePanel) gridSize() (int, int) {

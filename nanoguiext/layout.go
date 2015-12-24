@@ -1,6 +1,7 @@
 package nanoguiext
 
 import (
+	"fmt"
 	"github.com/shibukawa/nanogui.go"
 	"github.com/shibukawa/nanovgo"
 )
@@ -183,6 +184,10 @@ func (b *ExpandBoxLayout) PreferredSize(widget nanogui.Widget, ctx *nanovgo.Cont
 		containerSize[1] = widget.Height()
 	}
 	return containerSize[0], containerSize[1]
+}
+
+func (b *ExpandBoxLayout) String() string {
+	return fmt.Sprintf("ExpandBoxLayout[%s,%s]", b.orientation, b.alignment)
 }
 
 type ExpandListLayout struct {
@@ -393,6 +398,10 @@ func (g *ExpandListLayout) computeSize(widget nanogui.Widget, ctx *nanovgo.Conte
 		totalHeight = widget.Height()
 	}*/
 	return
+}
+
+func (g *ExpandListLayout) String() string {
+	return fmt.Sprintf("ExpandListLayout[%d]", len(g.widths))
 }
 
 func alignment(align nanogui.Alignment, space, preferredSize int) (offset, size int) {

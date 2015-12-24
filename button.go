@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -382,5 +381,5 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 }
 
 func (b *Button) String() string {
-	return fmt.Sprintf("Button [%d,%d-%d,%d] - %s", b.x, b.y, b.w, b.h, b.caption)
+	return b.StringHelper("Button", b.caption)
 }

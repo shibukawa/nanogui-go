@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -120,5 +119,5 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 }
 
 func (v *VScrollPanel) String() string {
-	return fmt.Sprintf("VScrollPanel [%d,%d-%d,%d]", v.x, v.y, v.w, v.h)
+	return v.StringHelper("VScrollPanel", "")
 }

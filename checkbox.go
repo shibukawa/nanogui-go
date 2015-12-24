@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -128,5 +127,5 @@ func (c *CheckBox) Draw(ctx *nanovgo.Context) {
 }
 
 func (c *CheckBox) String() string {
-	return fmt.Sprintf("CheckBox [%d,%d-%d,%d] - %s", c.x, c.y, c.w, c.h, c.caption)
+	return c.StringHelper("CheckBox", c.caption)
 }

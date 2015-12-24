@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -229,5 +228,5 @@ func (w *Window) FindWindow() IWindow {
 }
 
 func (w *Window) String() string {
-	return fmt.Sprintf("Window [%d,%d-%d,%d] - %s", w.x, w.y, w.w, w.h, w.title)
+	return w.StringHelper("Window", w.title)
 }

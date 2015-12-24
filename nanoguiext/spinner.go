@@ -6,6 +6,7 @@ import (
 	"github.com/shibukawa/nanogui.go"
 	"github.com/shibukawa/nanovgo"
 	"math"
+	"runtime"
 )
 
 type SpinnerState int
@@ -15,6 +16,14 @@ const (
 	SpinnerFadeIn
 	SpinnerFadeOut
 )
+
+func finalizeSpinner(spinner *Spinner) {
+	if spinner.filter != nil {
+		parent := spinner.filter.Parent()
+		parent.RemoveChild(spinner.filter)
+		spinner.filter = nil
+	}
+}
 
 type Spinner struct {
 	nanogui.WidgetImplement
@@ -42,6 +51,7 @@ func NewSpinner(parent nanogui.Widget) *Spinner {
 	nanogui.InitWidget(filter, screen)
 	spinner.filter = filter
 	filter.SetVisible(false)
+	runtime.SetFinalizer(spinner, finalizeSpinner)
 
 	return spinner
 }
@@ -178,6 +188,7 @@ func (sf *SpinnerFilter) Draw(ctx *nanovgo.Context) {
 				alpha = (1.0 - currentTime) * 0.7
 			}
 		}
+		ctx.Save()
 		ctx.BeginPath()
 		ctx.SetFillColor(nanovgo.MONOf(0, alpha))
 		ctx.Rect(0, float32(py), float32(fw), float32(fh))
@@ -187,16 +198,17 @@ func (sf *SpinnerFilter) Draw(ctx *nanovgo.Context) {
 			cy := float32(py + fh/2)
 			rotation := 2 * math.Pi * float64(currentTime*float32(sf.speed)*float32(sf.num)) / float64(sf.num)
 			dr := float64(2 * math.Pi / float64(sf.num))
+			ctx.SetStrokeWidth(sf.lineWidth)
 			for i := 0; i < sf.num; i++ {
 				ctx.BeginPath()
 				ctx.MoveTo(cx+float32(math.Cos(rotation))*sf.c1, cy+float32(math.Sin(rotation))*sf.c1)
 				ctx.LineTo(cx+float32(math.Cos(rotation))*sf.c2, cy+float32(math.Sin(rotation))*sf.c2)
 				ctx.SetStrokeColor(nanovgo.MONOf(1.0, float32(i)/float32(sf.num)))
-				ctx.SetStrokeWidth(sf.lineWidth)
 				ctx.Stroke()
 				rotation += dr
 			}
 		}
+		ctx.Restore()
 	} else {
 		sf.SetSize(0, 0)
 		sf.SetVisible(false)
@@ -245,7 +257,5 @@ func (sf *SpinnerFilter) IMEStatusEvent(self nanogui.Widget) bool {
 }
 
 func (sf *SpinnerFilter) String() string {
-	x, y := sf.Position()
-	w, h := sf.Size()
-	return fmt.Sprintf("SpinnerFilter [%d,%d-%d,%d]", x, y, w, h)
+	return sf.StringHelper("SpinnerFilter", "")
 }

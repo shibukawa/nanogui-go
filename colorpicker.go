@@ -89,5 +89,5 @@ func (c *ColorPicker) SetColor(color nanovgo.Color) {
 
 func (c *ColorPicker) String() string {
 	cw := c.colorWheel
-	return fmt.Sprintf("ColorPicker [%d,%d-%d,%d] - h:%f s:%f l:%f", c.x, c.y, c.w, c.h, cw.hue, cw.saturation, cw.lightness)
+	return c.StringHelper("ColorPicker", fmt.Sprintf("h:%f s:%f l:%f", cw.hue, cw.saturation, cw.lightness))
 }

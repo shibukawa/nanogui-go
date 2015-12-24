@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -153,5 +152,5 @@ func (g *Graph) Draw(ctx *nanovgo.Context) {
 }
 
 func (g *Graph) String() string {
-	return fmt.Sprintf("Graph [%d,%d-%d,%d] - %s", g.x, g.y, g.w, g.h, g.caption)
+	return g.StringHelper("Graph", g.caption)
 }

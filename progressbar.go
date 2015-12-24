@@ -51,5 +51,5 @@ func (p *ProgressBar) Draw(ctx *nanovgo.Context) {
 }
 
 func (p *ProgressBar) String() string {
-	return fmt.Sprintf("ProgressBar [%d,%d-%d,%d] - %f", p.x, p.y, p.w, p.h, p.value)
+	return p.StringHelper("ProgressBar", fmt.Sprintf("%f", p.value))
 }

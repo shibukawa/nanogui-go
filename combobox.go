@@ -1,7 +1,5 @@
 package nanogui
 
-import "fmt"
-
 type ComboBox struct {
 	PopupButton
 	callback      func(int)
@@ -122,5 +120,5 @@ func (c *ComboBox) SetCallback(callback func(int)) {
 }
 
 func (c *ComboBox) String() string {
-	return fmt.Sprintf("ComboBox [%d,%d-%d,%d] - %s", c.x, c.y, c.w, c.h, c.caption)
+	return c.StringHelper("ComboBox", c.caption)
 }

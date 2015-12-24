@@ -1,14 +1,22 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/nanovgo"
+	"runtime"
 )
 
 type PopupButton struct {
 	Button
 	chevronIcon Icon
 	popup       *Popup
+}
+
+func finalizePopupButton(button *PopupButton) {
+	if button.popup != nil {
+		parent := button.popup.Parent()
+		parent.RemoveChild(button.popup)
+		button.popup = nil
+	}
 }
 
 func NewPopupButton(parent Widget, captions ...string) *PopupButton {
@@ -34,6 +42,9 @@ func NewPopupButton(parent Widget, captions ...string) *PopupButton {
 	button.popup.SetSize(320, 250)
 
 	InitWidget(button, parent)
+
+	runtime.SetFinalizer(button, finalizePopupButton)
+
 	return button
 }
 
@@ -86,5 +97,5 @@ func (p *PopupButton) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 }
 
 func (p *PopupButton) String() string {
-	return fmt.Sprintf("PopupButton [%d,%d-%d,%d] - %s", p.x, p.y, p.w, p.h, p.caption)
+	return p.StringHelper("PopupButton", p.caption)
 }

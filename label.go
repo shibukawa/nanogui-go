@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/nanovgo"
 )
 
@@ -91,5 +90,5 @@ func (l *Label) Draw(ctx *nanovgo.Context) {
 }
 
 func (l *Label) String() string {
-	return fmt.Sprintf("Label [%d,%d-%d,%d] - %s", l.x, l.y, l.w, l.h, l.caption)
+	return l.StringHelper("Label", l.caption)
 }

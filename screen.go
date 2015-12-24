@@ -2,7 +2,6 @@ package nanogui
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/goxjs/gl"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
@@ -144,6 +143,18 @@ func NewScreen(width, height int, caption string, resizable, fullScreen bool) *S
 	return screen
 }
 
+func finalizeScreen(s *Screen) {
+	delete(nanoguiScreens, s.window)
+	if s.context != nil {
+		s.context.Delete()
+		s.context = nil
+	}
+	if s.window != nil && s.shutdownGLFWOnDestruct {
+		s.window.Destroy()
+		s.window = nil
+	}
+}
+
 func (s *Screen) Initialize(window *glfw.Window, shutdownGLFWOnDestruct bool) {
 	s.window = window
 	s.shutdownGLFWOnDestruct = shutdownGLFWOnDestruct
@@ -163,17 +174,7 @@ func (s *Screen) Initialize(window *glfw.Window, shutdownGLFWOnDestruct bool) {
 	s.dragActive = false
 	s.lastInteraction = GetTime()
 	nanoguiScreens[window] = s
-	runtime.SetFinalizer(s, func(s *Screen) {
-		delete(nanoguiScreens, window)
-		if s.context != nil {
-			s.context.Delete()
-			s.context = nil
-		}
-		if s.window != nil && s.shutdownGLFWOnDestruct {
-			s.window.Destroy()
-			s.window = nil
-		}
-	})
+	runtime.SetFinalizer(s, finalizeScreen)
 }
 
 // Caption() gets the window title bar caption
@@ -369,9 +370,9 @@ func (s *Screen) CenterWindow(window *Window) {
 		window.SetSize(window.PreferredSize(window, s.context))
 		window.OnPerformLayout(window, s.context)
 	}
-	x, y := window.Size()
-	px, py := window.Parent().Position()
-	window.SetPosition((px-x)/2, (py-y)/2)
+	ww, wh := window.Size()
+	pw, ph := window.Parent().Size()
+	window.SetPosition((pw-ww)/2, (ph-wh)/2)
 }
 
 // MoveWindowToFront is an internal helper function
@@ -591,7 +592,7 @@ func (s *Screen) PerformLayout() {
 }
 
 func (s *Screen) String() string {
-	return fmt.Sprintf("Screen [%d,%d-%d,%d]", s.x, s.y, s.w, s.h)
+	return s.StringHelper("Screen", "")
 }
 
 func traverse(buffer *bytes.Buffer, w Widget, indent int) {

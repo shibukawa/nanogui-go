@@ -1,7 +1,6 @@
 package nanogui
 
 import (
-	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 	"regexp"
@@ -642,7 +641,7 @@ func (t *TextBox) editingText() []rune {
 }
 
 func (t *TextBox) String() string {
-	return fmt.Sprintf("TextBox [%d,%d-%d,%d] - %s", t.x, t.y, t.w, t.h, t.value)
+	return t.StringHelper("TextBox", t.value)
 }
 
 type IntBox struct {
@@ -697,7 +696,7 @@ func (i *IntBox) SetCallback(callback func(int)) {
 }
 
 func (i *IntBox) String() string {
-	return fmt.Sprintf("IntBox [%d,%d-%d,%d] - %s", i.x, i.y, i.w, i.h, string(i.value))
+	return i.StringHelper("IntBox", i.value)
 }
 
 type FloatBox struct {
@@ -751,5 +750,5 @@ func (f *FloatBox) SetCallback(callback func(float64)) {
 }
 
 func (f *FloatBox) String() string {
-	return fmt.Sprintf("FloatBox [%d,%d-%d,%d] - %s", f.x, f.y, f.w, f.h, string(f.value))
+	return f.StringHelper("FloatBox", f.value)
 }

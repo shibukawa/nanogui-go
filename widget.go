@@ -527,5 +527,21 @@ func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
 }
 
 func (w *WidgetImplement) String() string {
-	return fmt.Sprintf("Widget [%d,%d-%d,%d]", w.x, w.y, w.w, w.h)
+	return w.StringHelper("Widget", "")
+}
+
+func (w *WidgetImplement) StringHelper(name, extra string) string {
+	if w.layout != nil {
+		if extra != "" {
+			return fmt.Sprintf("%s [%d,%d-%d,%d] (%s) - %s", name, w.x, w.y, w.w, w.h, w.layout.String(), extra)
+		} else {
+			return fmt.Sprintf("%s [%d,%d-%d,%d] (%s)", name, w.x, w.y, w.w, w.h, w.layout.String())
+		}
+	} else {
+		if extra != "" {
+			return fmt.Sprintf("%s [%d,%d-%d,%d] - %s", name, w.x, w.y, w.w, w.h, extra)
+		} else {
+			return fmt.Sprintf("%s [%d,%d-%d,%d]", name, w.x, w.y, w.w, w.h)
+		}
+	}
 }

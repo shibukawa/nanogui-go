@@ -14,6 +14,21 @@ const (
 	Fill
 )
 
+func (a Alignment) String() string {
+	switch a {
+	case Middle:
+		return "Middle"
+	case Minimum:
+		return "Minimum"
+	case Maximum:
+		return "Maximum"
+	case Fill:
+		return "Fill"
+	}
+	panic("you should not reach here")
+	return ""
+}
+
 type Orientation int
 
 const (
@@ -21,9 +36,22 @@ const (
 	Vertical
 )
 
+func (o Orientation) String() string {
+	switch o {
+	case Horizontal:
+		return "Horizontal"
+	case Vertical:
+		return "Vertical"
+	}
+	panic("you should not reach here")
+	return ""
+
+}
+
 type Layout interface {
 	OnPerformLayout(widget Widget, ctx *nanovgo.Context)
 	PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int)
+	String() string
 }
 
 // Simple horizontal/vertical box layout
@@ -198,6 +226,10 @@ func (b *BoxLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, int
 	return size[0], size[1]
 }
 
+func (b *BoxLayout) String() string {
+	return fmt.Sprintf("BoxLayout[%s,%s]", b.orientation, b.alignment)
+}
+
 // Special layout for widgets grouped by labels
 //
 // This widget resembles a box layout in that it arranges a set of widgets
@@ -369,6 +401,10 @@ func (g *GroupLayout) PreferredSize(widget Widget, ctx *nanovgo.Context) (int, i
 	}
 	height += g.margin
 	return width, height
+}
+
+func (g *GroupLayout) String() string {
+	return "GroupLayout"
 }
 
 // Grid layout
@@ -644,6 +680,10 @@ func (g *GridLayout) computeLayout(widget Widget, ctx *nanovgo.Context) [][]int 
 		}
 	}
 	return grid
+}
+
+func (g *GridLayout) String() string {
+	return fmt.Sprintf("GridLayout[%s,%d]", g.orientation, g.resolution)
 }
 
 type Anchor struct {
@@ -950,4 +990,8 @@ func (a *AdvancedGridLayout) computeLayout(widget Widget, ctx *nanovgo.Context) 
 		}
 	}
 	return grids
+}
+
+func (a *AdvancedGridLayout) String() string {
+	return fmt.Sprintf("AdvancedGridLayout[%d-%d]", len(a.cols), len(a.rows))
 }
