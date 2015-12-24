@@ -172,7 +172,7 @@ func (b *BoxLayout) OnPerformLayout(widget Widget, ctx *nanovgo.Context) {
 		case Middle:
 			pos[axis2] += (containerSize[axis2] - yOffset - targetSize[axis2]) / 2
 		case Maximum:
-			pos[axis2] += containerSize[axis2] - yOffset - targetSize[axis2] - b.margin*2
+			pos[axis2] += containerSize[axis2] - yOffset - targetSize[axis2] - b.margin
 		case Fill:
 			pos[axis2] += b.margin
 			if fs[axis2] > 0 {
