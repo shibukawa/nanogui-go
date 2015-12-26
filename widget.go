@@ -506,7 +506,7 @@ func (w *WidgetImplement) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 
 // Draw() draws the widget (and all child widgets)
 func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
-	if debug {
+	if debugFlag {
 		ctx.SetStrokeWidth(1.0)
 		ctx.BeginPath()
 		ctx.Rect(float32(w.x)-0.5, float32(w.y)-0.5, float32(w.w)+1.0, float32(w.h)+1.0)

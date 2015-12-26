@@ -33,11 +33,11 @@ func NewColorPicker(parent Widget, colors ...nanovgo.Color) *ColorPicker {
 	parentWindow := parent.FindWindow()
 
 	colorPicker.popup = NewPopup(parentWindow.Parent(), parentWindow)
-	colorPicker.popup.SetLayout(NewGroupLayout())
+	colorPicker.popup.panel.SetLayout(NewGroupLayout())
 
-	colorPicker.colorWheel = NewColorWheel(colorPicker.popup)
+	colorPicker.colorWheel = NewColorWheel(colorPicker.popup.panel)
 
-	colorPicker.pickButton = NewButton(colorPicker.popup, "Pick")
+	colorPicker.pickButton = NewButton(colorPicker.popup.panel, "Pick")
 	colorPicker.pickButton.SetFixedSize(100, 25)
 
 	InitWidget(colorPicker, parent)

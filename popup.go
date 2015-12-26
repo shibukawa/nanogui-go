@@ -10,6 +10,8 @@ type Popup struct {
 	anchorX      int
 	anchorY      int
 	anchorHeight int
+	vScroll      *VScrollPanel
+	panel        Widget
 }
 
 func NewPopup(parent Widget, parentWindow IWindow) *Popup {
@@ -18,6 +20,8 @@ func NewPopup(parent Widget, parentWindow IWindow) *Popup {
 		anchorHeight: 30,
 	}
 	InitWidget(popup, parent)
+	popup.vScroll = NewVScrollPanel(popup)
+	popup.panel = NewVScrollPanelChild(popup.vScroll)
 	return popup
 }
 

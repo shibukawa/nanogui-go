@@ -3,6 +3,7 @@ package nanogui
 import (
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
+	"runtime/debug"
 )
 
 type VScrollPanel struct {
@@ -35,7 +36,7 @@ func (v *VScrollPanel) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 	child := v.children[0]
 	_, v.childPreferredHeight = child.PreferredSize(child, ctx)
 	child.SetPosition(0, 0)
-	child.SetSize(v.w-12, v.childPreferredHeight)
+	child.SetSize(v.w, v.childPreferredHeight)
 }
 
 func (v *VScrollPanel) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
@@ -120,4 +121,84 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 
 func (v *VScrollPanel) String() string {
 	return v.StringHelper("VScrollPanel", "")
+}
+
+type VScrollPanelChild struct {
+	WidgetImplement
+}
+
+func NewVScrollPanelChild(parent *VScrollPanel) *VScrollPanelChild {
+	result := &VScrollPanelChild{}
+	InitWidget(result, parent)
+	return result
+}
+
+func (v *VScrollPanelChild) Size() (int, int) {
+	return v.Parent().Size()
+}
+
+func (v *VScrollPanelChild) SetSize(w, h int) {
+	debug.PrintStack()
+	println("SetSize", w, h)
+	if h > 400 {
+		v.Parent().Parent().SetSize(w, 400)
+		v.Parent().SetSize(w, 400)
+	} else {
+		v.Parent().Parent().SetSize(w, h)
+		v.Parent().SetSize(w, h)
+	}
+}
+
+func (v *VScrollPanelChild) Width() int {
+	return v.Parent().Width()
+}
+
+func (v *VScrollPanelChild) SetWidth(w int) {
+	v.Parent().Parent().SetWidth(w)
+	v.Parent().SetWidth(w)
+}
+
+func (v *VScrollPanelChild) Height() int {
+	return v.Parent().Height()
+}
+
+func (v *VScrollPanelChild) SetHeight(h int) {
+	v.Parent().Parent().SetHeight(h)
+	v.Parent().SetHeight(h)
+}
+
+func (v *VScrollPanelChild) FixedSize() (int, int) {
+	return v.Parent().Parent().FixedSize()
+}
+
+func (v *VScrollPanelChild) SetFixedSize(w, h int) {
+	v.Parent().Parent().SetFixedSize(w, h)
+}
+
+func (v *VScrollPanelChild) FixedWidth() int {
+	return v.Parent().Parent().FixedWidth()
+}
+
+func (v *VScrollPanelChild) FixedHeight() int {
+	return v.Parent().Parent().FixedHeight()
+}
+
+func (v *VScrollPanelChild) SetFixedWidth(w int) {
+	v.Parent().Parent().SetFixedWidth(w)
+}
+
+func (v *VScrollPanelChild) SetFixedHeight(h int) {
+	v.Parent().Parent().SetFixedHeight(h)
+}
+
+func (v *VScrollPanelChild) Visible() bool {
+	return v.Parent().Parent().Visible()
+}
+
+func (v *VScrollPanelChild) SetVisible(flag bool) {
+	v.Parent().Parent().SetVisible(flag)
+}
+
+func (v *VScrollPanelChild) String() string {
+	return v.StringHelper("VScrollPanelChild", "")
 }

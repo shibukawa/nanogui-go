@@ -9,7 +9,7 @@ import (
 
 var mainloopActive bool = false
 var startTime time.Time
-var debug bool
+var debugFlag bool
 
 func Init() {
 	err := glfw.Init(gl.ContextWatcher)
@@ -64,16 +64,16 @@ func MainLoop() {
 }
 
 func SetDebug(d bool) {
-	debug = d
+	debugFlag = d
 }
 
 func InitWidget(child, parent Widget) {
-	child.SetVisible(true)
-	child.SetEnabled(true)
-	child.SetFontSize(-1)
 	//w.cursor = Arrow
 	if parent != nil {
 		parent.AddChild(parent, child)
 		child.SetTheme(parent.Theme())
 	}
+	child.SetVisible(true)
+	child.SetEnabled(true)
+	child.SetFontSize(-1)
 }

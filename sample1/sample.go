@@ -37,9 +37,8 @@ func (a *Application) init() {
 		a.progress.SetValue(float32(math.Mod(float64(nanogui.GetTime())/10, 1.0)))
 	})
 
-	a.screen.DebugPrint()
-
 	a.screen.PerformLayout()
+	a.screen.DebugPrint()
 
 	/* All NanoGUI widgets are initialized at this point. Now
 	create an OpenGL shader to draw the main window contents.

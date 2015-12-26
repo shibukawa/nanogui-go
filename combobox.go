@@ -62,7 +62,7 @@ func (c *ComboBox) SetSelectedIndex(i int) {
 	}
 }
 
-func generateCallback(c *ComboBox, popup *Popup, i int) func() {
+func generateCallback(c *ComboBox, popup Widget, i int) func() {
 	return func() {
 		c.selectedIndex = i
 		c.SetCaption(c.shortItems[i])

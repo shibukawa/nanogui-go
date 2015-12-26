@@ -92,8 +92,7 @@ func BasicWidgetsDemo(screen *nanogui.Screen, images []nanogui.Image) (*nanogui.
 	imagePanelButton := nanogui.NewPopupButton(window, "Image Panel")
 	imagePanelButton.SetIcon(nanogui.IconFolder)
 	popup := imagePanelButton.Popup()
-	vscroll := nanogui.NewVScrollPanel(popup)
-	imgPanel := nanogui.NewImagePanel(vscroll)
+	imgPanel := nanogui.NewImagePanel(popup)
 	imgPanel.SetImages(images)
 	popup.SetFixedSize(245, 150)
 

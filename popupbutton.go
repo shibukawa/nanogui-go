@@ -56,8 +56,8 @@ func (p *PopupButton) SetChevronIcon(icon Icon) {
 	p.chevronIcon = icon
 }
 
-func (p *PopupButton) Popup() *Popup {
-	return p.popup
+func (p *PopupButton) Popup() Widget {
+	return p.popup.panel
 }
 
 func (p *PopupButton) Draw(ctx *nanovgo.Context) {
