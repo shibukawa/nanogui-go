@@ -3,7 +3,7 @@ package nanogui
 import (
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
-	"runtime/debug"
+	"runtime"
 )
 
 type VScrollPanel struct {
@@ -53,16 +53,27 @@ func (v *VScrollPanel) MouseDragEvent(self Widget, x, y, relX, relY, button int,
 		return false
 	}
 	h := float32(v.h)
-	scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
-	v.scroll = clampF(v.scroll+float32(relY)/(h-8-scrollH), 0.0, 1.0)
+	if v.h < v.childPreferredHeight {
+		if runtime.GOOS == "darwin" {
+			relY = -relY
+		}
+		scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
+		v.scroll = clampF(v.scroll+float32(relY)/(h-8-scrollH), 0.0, 1.0)
+	} else {
+		v.scroll = 0.0
+	}
 	return true
 }
 
 func (v *VScrollPanel) ScrollEvent(self Widget, x, y, relX, relY int) bool {
-	h := float32(v.h)
-	scrollAmount := float32(relY) * h / 20.0
-	scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
-	v.scroll = clampF(v.scroll-scrollAmount/(h-8-scrollH), 0.0, 1.0)
+	if v.h < v.childPreferredHeight {
+		h := float32(v.h)
+		scrollAmount := float32(relY) * h / 20.0
+		scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
+		v.scroll = clampF(v.scroll-scrollAmount/(h-8-scrollH), 0.0, 1.0)
+	} else {
+		v.scroll = 0.0
+	}
 	return true
 }
 
@@ -71,7 +82,7 @@ func (v *VScrollPanel) MouseButtonEvent(self Widget, x, y int, button glfw.Mouse
 		return false
 	}
 	child := v.children[0]
-	shift := int(v.scroll) * (v.childPreferredHeight - v.h)
+	shift := int(v.scroll * float32(v.childPreferredHeight-v.h))
 	return child.MouseButtonEvent(child, x, y+shift, button, down, modifier)
 }
 
@@ -80,7 +91,7 @@ func (v *VScrollPanel) MouseMotionEvent(self Widget, x, y, relX, relY, button in
 		return false
 	}
 	child := v.children[0]
-	shift := int(v.scroll) * (v.childPreferredHeight - v.h)
+	shift := int(v.scroll * float32(v.childPreferredHeight-v.h))
 	return child.MouseMotionEvent(child, x, y+shift, relX, relY, button, modifier)
 }
 
@@ -105,18 +116,19 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 		child.Draw(ctx)
 	}
 	ctx.Restore()
+	if v.childPreferredHeight > v.h {
+		paint := nanovgo.BoxGradient(x+w-12+1, y+4+1, 8, h-8, 3, 4, nanovgo.MONO(0, 32), nanovgo.MONO(0, 92))
+		ctx.BeginPath()
+		ctx.RoundedRect(x+w-12, y+4, 8, h-8, 3)
+		ctx.SetFillPaint(paint)
+		ctx.Fill()
 
-	paint := nanovgo.BoxGradient(x+w-12+1, y+4+1, 8, h-8, 3, 4, nanovgo.MONO(0, 32), nanovgo.MONO(0, 92))
-	ctx.BeginPath()
-	ctx.RoundedRect(x+w-12, y+4, 8, h-8, 3)
-	ctx.SetFillPaint(paint)
-	ctx.Fill()
-
-	barPaint := nanovgo.BoxGradient(x+y-12-1, y+4+1+(h-8-scrollH)*v.scroll-1, 8, scrollH, 3, 4, nanovgo.MONO(220, 100), nanovgo.MONO(128, 100))
-	ctx.BeginPath()
-	ctx.RoundedRect(x+w-12+1, y+4+1+(h-8-scrollH)*v.scroll, 8-2, scrollH-2, 2)
-	ctx.SetFillPaint(barPaint)
-	ctx.Fill()
+		barPaint := nanovgo.BoxGradient(x+y-12-1, y+4+1+(h-8-scrollH)*v.scroll-1, 8, scrollH, 3, 4, nanovgo.MONO(220, 100), nanovgo.MONO(128, 100))
+		ctx.BeginPath()
+		ctx.RoundedRect(x+w-12+1, y+4+1+(h-8-scrollH)*v.scroll, 8-2, scrollH-2, 2)
+		ctx.SetFillPaint(barPaint)
+		ctx.Fill()
+	}
 }
 
 func (v *VScrollPanel) String() string {
@@ -138,8 +150,6 @@ func (v *VScrollPanelChild) Size() (int, int) {
 }
 
 func (v *VScrollPanelChild) SetSize(w, h int) {
-	debug.PrintStack()
-	println("SetSize", w, h)
 	if h > 400 {
 		v.Parent().Parent().SetSize(w, 400)
 		v.Parent().SetSize(w, 400)
@@ -197,6 +207,21 @@ func (v *VScrollPanelChild) Visible() bool {
 
 func (v *VScrollPanelChild) SetVisible(flag bool) {
 	v.Parent().Parent().SetVisible(flag)
+}
+
+func (v *VScrollPanelChild) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
+	v.WidgetImplement.MouseButtonEvent(self, x, y, button, down, modifier)
+	return true
+}
+
+func (v *VScrollPanelChild) MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
+	v.WidgetImplement.MouseMotionEvent(self, x, y, relX, relY, button, modifier)
+	return true
+}
+
+func (v *VScrollPanelChild) ScrollEvent(self Widget, x, y, relX, relY int) bool {
+	v.WidgetImplement.ScrollEvent(self, x, y, relX, relY)
+	return true
 }
 
 func (v *VScrollPanelChild) String() string {
