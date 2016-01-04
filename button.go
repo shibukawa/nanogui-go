@@ -174,6 +174,10 @@ func (b *Button) FontSize() int {
 	return b.theme.ButtonFontSize
 }
 
+func (b *Button) SetFontSize(size int) {
+	b.fontSize = size
+}
+
 func (b *Button) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
 	b.WidgetImplement.MouseButtonEvent(b, x, y, button, down, modifier)
 
@@ -319,7 +323,8 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 	fontSize := float32(b.FontSize())
 	ctx.SetFontSize(fontSize)
 	ctx.SetFontFace(b.theme.FontBold)
-	tw, _ := ctx.TextBounds(0, 0, b.caption)
+	caption := b.caption
+	tw, _ := ctx.TextBounds(0, 0, caption)
 
 	centerX := bx + bw*0.5
 	centerY := by + bh*0.5
@@ -375,9 +380,9 @@ func (b *Button) Draw(ctx *nanovgo.Context) {
 	ctx.SetFontFace(b.theme.FontBold)
 	ctx.SetTextAlign(nanovgo.AlignLeft | nanovgo.AlignMiddle)
 	ctx.SetFillColor(b.theme.TextColorShadow)
-	ctx.Text(textPosX, textPosY, b.caption)
+	ctx.Text(textPosX, textPosY, caption)
 	ctx.SetFillColor(textColor)
-	ctx.Text(textPosX, textPosY+1.0, b.caption)
+	ctx.Text(textPosX, textPosY+1.0, caption)
 }
 
 func (b *Button) String() string {
