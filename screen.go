@@ -378,21 +378,26 @@ func (s *Screen) CenterWindow(window *Window) {
 // MoveWindowToFront is an internal helper function
 func (s *Screen) MoveWindowToFront(window IWindow) {
 	parent := window.Parent()
-	parent.RemoveChild(window)
-	parent.SetChildren(append(parent.Children(), window))
-	window.SetParent(parent)
+	maxDepth := 0
+	for _, child := range parent.Children() {
+		depth := child.Depth()
+		if child != window && maxDepth < depth {
+			maxDepth = depth
+		}
+	}
+	window.SetDepth(maxDepth + 1)
 	changed := true
 	for changed {
-		baseIndex := 0
-		for i, child := range parent.Children() {
+		baseDepth := 0
+		for _, child := range parent.Children() {
 			if child == window {
-				baseIndex = i
+				baseDepth = child.Depth()
 			}
 		}
 		changed = false
-		for i, child := range parent.Children() {
+		for _, child := range parent.Children() {
 			pw, ok := child.(*Popup)
-			if ok && pw.ParentWindow() == window && i < baseIndex {
+			if ok && pw.ParentWindow() == window && pw.Depth() < baseDepth {
 				s.MoveWindowToFront(pw)
 				changed = true
 				break

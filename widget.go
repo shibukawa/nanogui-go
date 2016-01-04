@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
+	"sort"
 )
 
 // Widget is base class of all widgets
@@ -74,6 +75,7 @@ type Widget interface {
 	OnPerformLayout(self Widget, ctx *nanovgo.Context)
 	Draw(ctx *nanovgo.Context)
 	String() string
+	Depth() int
 }
 
 type WidgetImplement struct {
@@ -378,12 +380,29 @@ func (w *WidgetImplement) Contains(x, y int) bool {
 	return w.x <= x && w.y <= y && x <= w.x+w.w && y <= w.y+w.h
 }
 
+func childrenReverseDepthOrder(self Widget) []Widget {
+	children := self.Children()
+
+	widgets := make([]Widget, 0, len(children))
+	var windows widgetsAsc = make([]Widget, 0, len(children))
+
+	for _, child := range children {
+		if child.Visible() {
+			if child.Depth() == 0 {
+				widgets = append(widgets, child)
+			} else {
+				windows = append(windows, child)
+			}
+		}
+	}
+	sort.Sort(sort.Reverse(windows))
+	return append(windows, widgets...)
+}
+
 // FindWidget() determines the widget located at the given position value (recursive)
 func (w *WidgetImplement) FindWidget(self Widget, x, y int) Widget {
-	children := self.Children()
-	for i := len(children) - 1; i > -1; i-- {
-		child := children[i]
-		if child.Visible() && child.Contains(x-w.x, y-w.y) {
+	for _, child := range childrenReverseDepthOrder(self) {
+		if child.Contains(x-w.x, y-w.y) {
 			return child.FindWidget(child, x-w.x, y-w.y)
 		}
 	}
@@ -395,10 +414,8 @@ func (w *WidgetImplement) FindWidget(self Widget, x, y int) Widget {
 
 // MouseButtonEvent() handles a mouse button event (default implementation: propagate to children)
 func (w *WidgetImplement) MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool {
-	children := self.Children()
-	for i := len(children) - 1; i > -1; i-- {
-		child := children[i]
-		if child.Visible() && child.Contains(x-w.x, y-w.y) && child.MouseButtonEvent(child, x-w.x, y-w.y, button, down, modifier) {
+	for _, child := range childrenReverseDepthOrder(self) {
+		if child.Contains(x-w.x, y-w.y) && child.MouseButtonEvent(child, x-w.x, y-w.y, button, down, modifier) {
 			return true
 		}
 	}
@@ -410,12 +427,7 @@ func (w *WidgetImplement) MouseButtonEvent(self Widget, x, y int, button glfw.Mo
 
 // MouseMotionEvent() handles a mouse motion event (default implementation: propagate to children)
 func (w *WidgetImplement) MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool {
-	children := self.Children()
-	for i := len(children) - 1; i > -1; i-- {
-		child := children[i]
-		if !child.Visible() {
-			continue
-		}
+	for _, child := range childrenReverseDepthOrder(self) {
 		contained := child.Contains(x-w.x, y-w.y)
 		prevContained := child.Contains(x-w.x-relX, y-w.y-relY)
 		if contained != prevContained {
@@ -441,12 +453,7 @@ func (w *WidgetImplement) MouseEnterEvent(self Widget, x, y int, enter bool) boo
 
 // ScrollEvent() handles a mouse scroll event (default implementation: propagate to children)
 func (w *WidgetImplement) ScrollEvent(self Widget, x, y, relX, relY int) bool {
-	children := self.Children()
-	for i := len(children) - 1; i > -1; i-- {
-		child := children[i]
-		if !child.Visible() {
-			continue
-		}
+	for _, child := range childrenReverseDepthOrder(self) {
 		if child.Contains(x-w.x, y-w.y) && child.ScrollEvent(child, x-w.x, y-w.y, relX, relY) {
 			return true
 		}
@@ -518,10 +525,22 @@ func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
 		return
 	}
 	ctx.Translate(float32(w.x), float32(w.y))
+	// draw depth 0 items
+	var drawLater widgetsAsc = make([]Widget, 0, len(w.children))
 	for _, child := range w.children {
 		if child.Visible() {
-			child.Draw(ctx)
+			depth := child.Depth()
+			if depth == 0 {
+				child.Draw(ctx)
+			} else {
+				drawLater = append(drawLater, child)
+			}
 		}
+	}
+	// draw by depth order
+	sort.Sort(drawLater)
+	for _, child := range drawLater {
+		child.Draw(ctx)
 	}
 	ctx.Translate(-float32(w.x), -float32(w.y))
 }
@@ -544,4 +563,23 @@ func (w *WidgetImplement) StringHelper(name, extra string) string {
 			return fmt.Sprintf("%s [%d,%d-%d,%d]", name, w.x, w.y, w.w, w.h)
 		}
 	}
+}
+
+func (w *WidgetImplement) Depth() int {
+	return 0
+}
+
+// Sort Interface
+type widgetsAsc []Widget
+
+func (w widgetsAsc) Len() int {
+	return len(w)
+}
+
+func (w widgetsAsc) Less(i, j int) bool {
+	return w[i].Depth() < w[j].Depth()
+}
+
+func (w widgetsAsc) Swap(i, j int) {
+	w[i], w[j] = w[j], w[i]
 }

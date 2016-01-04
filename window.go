@@ -1,6 +1,7 @@
 package nanogui
 
 import (
+	"fmt"
 	"github.com/shibukawa/glfw"
 	"github.com/shibukawa/nanovgo"
 )
@@ -12,11 +13,13 @@ type Window struct {
 	modal       bool
 	drag        bool
 	draggable   bool
+	depth       int
 }
 
 type IWindow interface {
 	Widget
 	RefreshRelativePlacement()
+	SetDepth(d int)
 }
 
 func NewWindow(parent Widget, title string) *Window {
@@ -228,5 +231,13 @@ func (w *Window) FindWindow() IWindow {
 }
 
 func (w *Window) String() string {
-	return w.StringHelper("Window", w.title)
+	return w.StringHelper(fmt.Sprintf("Window(%d)", w.Depth()), w.title)
+}
+
+func (w *Window) SetDepth(d int) {
+	w.depth = d
+}
+
+func (w *Window) Depth() int {
+	return w.depth
 }
