@@ -131,10 +131,7 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 		averageSize = remainedLength / childCount
 	}
 	for i, child := range widget.Children() {
-		if !child.Visible() {
-			continue
-		}
-		if child.IsPositionAbsolute() {
+		if !child.Visible() || child.IsPositionAbsolute() {
 			child.OnPerformLayout(child, ctx)
 			continue
 		}
