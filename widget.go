@@ -396,7 +396,10 @@ func childrenReverseDepthOrder(self Widget) []Widget {
 		}
 	}
 	sort.Sort(sort.Reverse(windows))
-	return append(windows, widgets...)
+	for i := len(widgets) - 1; i > -1; i-- {
+		windows = append(windows, widgets[i])
+	}
+	return windows
 }
 
 // FindWidget() determines the widget located at the given position value (recursive)
