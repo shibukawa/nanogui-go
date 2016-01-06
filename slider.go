@@ -84,7 +84,7 @@ func (s *Slider) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	return 70, 12
 }
 
-func (s *Slider) Draw(ctx *nanovgo.Context) {
+func (s *Slider) Draw(self Widget, ctx *nanovgo.Context) {
 	sx := float32(s.x)
 	sy := float32(s.y)
 	sw := float32(s.w)

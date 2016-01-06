@@ -29,12 +29,12 @@ func (p *ProgressBar) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int
 	return 70, 12
 }
 
-func (p *ProgressBar) Draw(ctx *nanovgo.Context) {
+func (p *ProgressBar) Draw(self Widget, ctx *nanovgo.Context) {
 	px := float32(p.x)
 	py := float32(p.y)
 	pw := float32(p.w)
 	ph := float32(p.h)
-	p.WidgetImplement.Draw(ctx)
+	p.WidgetImplement.Draw(self, ctx)
 	paint := nanovgo.BoxGradient(px+1, py+1, pw-2, ph, 3, 4, nanovgo.MONO(0, 32), nanovgo.MONO(0, 92))
 	ctx.BeginPath()
 	ctx.RoundedRect(px, py, pw, ph, 3)

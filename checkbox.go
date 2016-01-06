@@ -86,11 +86,11 @@ func (c *CheckBox) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	return int(w + 1.7*fontSize), int(fontSize * 1.3)
 }
 
-func (c *CheckBox) Draw(ctx *nanovgo.Context) {
+func (c *CheckBox) Draw(self Widget, ctx *nanovgo.Context) {
 	cx := float32(c.x)
 	cy := float32(c.y)
 	ch := float32(c.h)
-	c.WidgetImplement.Draw(ctx)
+	c.WidgetImplement.Draw(self, ctx)
 	fontSize := float32(c.FontSize())
 	ctx.SetFontSize(fontSize)
 	ctx.SetFontFace(c.theme.FontNormal)

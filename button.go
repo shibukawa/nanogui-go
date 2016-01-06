@@ -260,8 +260,8 @@ func (b *Button) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	return int(tw + iw + 20), int(fontSize) + 10
 }
 
-func (b *Button) Draw(ctx *nanovgo.Context) {
-	b.WidgetImplement.Draw(ctx)
+func (b *Button) Draw(self Widget, ctx *nanovgo.Context) {
+	b.WidgetImplement.Draw(self, ctx)
 
 	bx := float32(b.x)
 	by := float32(b.y)

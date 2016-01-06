@@ -158,7 +158,7 @@ func (w *Window) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 	}
 }
 
-func (w *Window) Draw(ctx *nanovgo.Context) {
+func (w *Window) Draw(self Widget, ctx *nanovgo.Context) {
 	ds := float32(w.theme.WindowDropShadowSize)
 	cr := float32(w.theme.WindowCornerRadius)
 	hh := float32(w.theme.WindowHeaderHeight)
@@ -223,7 +223,7 @@ func (w *Window) Draw(ctx *nanovgo.Context) {
 		ctx.Text(wx+ww*0.5, wy+hh*0.5-1, w.title)
 	}
 	ctx.Restore()
-	w.WidgetImplement.Draw(ctx)
+	w.WidgetImplement.Draw(self, ctx)
 }
 
 func (w *Window) FindWindow() IWindow {

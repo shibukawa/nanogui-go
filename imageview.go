@@ -60,7 +60,7 @@ func (i *ImageView) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) 
 	return w, h
 }
 
-func (i *ImageView) Draw(ctx *nanovgo.Context) {
+func (i *ImageView) Draw(self Widget, ctx *nanovgo.Context) {
 	if i.image == 0 {
 		return
 	}

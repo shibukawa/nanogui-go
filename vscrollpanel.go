@@ -11,6 +11,7 @@ type VScrollPanel struct {
 
 	childPreferredHeight int
 	scroll               float32
+	scrollPosition       float32
 }
 
 func NewVScrollPanel(parent Widget) *VScrollPanel {
@@ -52,13 +53,15 @@ func (v *VScrollPanel) MouseDragEvent(self Widget, x, y, relX, relY, button int,
 	if len(v.children) == 0 {
 		return false
 	}
-	h := float32(v.h)
 	if v.h < v.childPreferredHeight {
-		if runtime.GOOS == "darwin" {
+		h := float32(v.h)
+		ph := float32(v.childPreferredHeight)
+		if runtime.GOOS != "darwin" {
 			relY = -relY
 		}
-		scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
-		v.scroll = clampF(v.scroll+float32(relY)/(h-8-scrollH), 0.0, 1.0)
+		scrollAmount := float32(relY) * 2
+		v.scrollPosition = clampF(v.scrollPosition-scrollAmount, 0.0, ph-h)
+		v.scroll = clampF(v.scrollPosition/(ph-h), 0.0, 1.0)
 	} else {
 		v.scroll = 0.0
 	}
@@ -68,11 +71,14 @@ func (v *VScrollPanel) MouseDragEvent(self Widget, x, y, relX, relY, button int,
 func (v *VScrollPanel) ScrollEvent(self Widget, x, y, relX, relY int) bool {
 	if v.h < v.childPreferredHeight {
 		h := float32(v.h)
-		scrollAmount := float32(relY) * h / 20.0
-		scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
-		v.scroll = clampF(v.scroll-scrollAmount/(h-8-scrollH), 0.0, 1.0)
+		ph := float32(v.childPreferredHeight)
+		scrollAmount := float32(relY) * 2
+
+		v.scrollPosition = clampF(v.scrollPosition-scrollAmount, 0.0, ph-h)
+		v.scroll = clampF(v.scrollPosition/(ph-h), 0.0, 1.0)
 	} else {
 		v.scroll = 0.0
+		v.scrollPosition = 0.0
 	}
 	return true
 }
@@ -95,7 +101,7 @@ func (v *VScrollPanel) MouseMotionEvent(self Widget, x, y, relX, relY, button in
 	return child.MouseMotionEvent(child, x, y+shift, relX, relY, button, modifier)
 }
 
-func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
+func (v *VScrollPanel) Draw(self Widget, ctx *nanovgo.Context) {
 	if len(v.children) == 0 {
 		return
 	}
@@ -106,17 +112,18 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 
 	child := v.children[0]
 	_, v.childPreferredHeight = child.PreferredSize(child, ctx)
-	scrollH := float32(v.h) * minF(1.0, h/float32(v.childPreferredHeight))
 
 	ctx.Save()
 	ctx.Translate(x, y)
 	ctx.Scissor(0, 0, w, h)
 	ctx.Translate(0, -v.scroll*(float32(v.childPreferredHeight)-h))
 	if child.Visible() {
-		child.Draw(ctx)
+		child.Draw(child, ctx)
 	}
 	ctx.Restore()
 	if v.childPreferredHeight > v.h {
+		scrollH := h * minF(1.0, h/float32(v.childPreferredHeight))
+		scrollH = minF(maxF(20.0, scrollH), h)
 		paint := nanovgo.BoxGradient(x+w-12+1, y+4+1, 8, h-8, 3, 4, nanovgo.MONO(0, 32), nanovgo.MONO(0, 92))
 		ctx.BeginPath()
 		ctx.RoundedRect(x+w-12, y+4, 8, h-8, 3)
@@ -129,6 +136,11 @@ func (v *VScrollPanel) Draw(ctx *nanovgo.Context) {
 		ctx.SetFillPaint(barPaint)
 		ctx.Fill()
 	}
+}
+
+func (v *VScrollPanel) IsClipped(x, y, w, h int) bool {
+	scroll := int(v.scroll * (float32(v.childPreferredHeight) - float32(v.h)))
+	return v.Parent().IsClipped(x+v.x, y-scroll+v.y, w, h)
 }
 
 func (v *VScrollPanel) String() string {
@@ -226,4 +238,12 @@ func (v *VScrollPanelChild) ScrollEvent(self Widget, x, y, relX, relY int) bool 
 
 func (v *VScrollPanelChild) String() string {
 	return v.StringHelper("VScrollPanelChild", "")
+}
+
+func (v *VScrollPanelChild) IsClipped(cx, cy, cw, ch int) bool {
+	parent := v.Parent()
+	if parent == nil {
+		return false
+	}
+	return parent.IsClipped(cx+v.x, cy+v.y, cw, ch)
 }

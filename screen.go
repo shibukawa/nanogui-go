@@ -425,7 +425,7 @@ func (s *Screen) drawWidgets() {
 
 	s.pixelRatio = float32(s.fbW) / float32(s.w)
 	s.context.BeginFrame(s.w, s.h, s.pixelRatio)
-	s.Draw(s.context)
+	s.Draw(s, s.context)
 	elapsed := GetTime() - s.lastInteraction
 
 	if elapsed > 0.5 {
@@ -598,6 +598,22 @@ func (s *Screen) PerformLayout() {
 
 func (s *Screen) String() string {
 	return s.StringHelper("Screen", "")
+}
+
+func (s *Screen) IsClipped(cx, cy, cw, ch int) bool {
+	if cy+ch < 0 {
+		return true
+	}
+	if cy > s.h {
+		return true
+	}
+	if cx+cw < 0 {
+		return true
+	}
+	if cx > s.w {
+		return true
+	}
+	return false
 }
 
 func traverse(buffer *bytes.Buffer, w Widget, indent int) {

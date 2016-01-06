@@ -79,8 +79,8 @@ func (c *ColorWheel) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
 	return 100, 100
 }
 
-func (c *ColorWheel) Draw(ctx *nanovgo.Context) {
-	c.WidgetImplement.Draw(ctx)
+func (c *ColorWheel) Draw(self Widget, ctx *nanovgo.Context) {
+	c.WidgetImplement.Draw(self, ctx)
 
 	if !c.visible {
 		return

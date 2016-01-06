@@ -60,6 +60,8 @@ type Widget interface {
 	Cursor() Cursor
 	SetCursor(c Cursor)
 	Contains(x, y int) bool
+	IsClipped(x, y, w, h int) bool
+
 	FindWidget(self Widget, x, y int) Widget
 	MouseButtonEvent(self Widget, x, y int, button glfw.MouseButton, down bool, modifier glfw.ModifierKey) bool
 	MouseMotionEvent(self Widget, x, y, relX, relY, button int, modifier glfw.ModifierKey) bool
@@ -73,7 +75,7 @@ type Widget interface {
 	IMEStatusEvent(self Widget) bool
 	PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
 	OnPerformLayout(self Widget, ctx *nanovgo.Context)
-	Draw(ctx *nanovgo.Context)
+	Draw(self Widget, ctx *nanovgo.Context)
 	String() string
 	Depth() int
 }
@@ -495,7 +497,7 @@ func (w *WidgetImplement) PreferredSize(self Widget, ctx *nanovgo.Context) (int,
 	if w.layout != nil {
 		return w.layout.PreferredSize(self, ctx)
 	}
-	return w.x, w.y
+	return w.w, w.h
 }
 
 // PerformLayout() invokes the associated layout generator to properly place child widgets, if any
@@ -515,7 +517,7 @@ func (w *WidgetImplement) OnPerformLayout(self Widget, ctx *nanovgo.Context) {
 }
 
 // Draw() draws the widget (and all child widgets)
-func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
+func (w *WidgetImplement) Draw(self Widget, ctx *nanovgo.Context) {
 	if debugFlag {
 		ctx.SetStrokeWidth(1.0)
 		ctx.BeginPath()
@@ -534,7 +536,11 @@ func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
 		if child.Visible() {
 			depth := child.Depth()
 			if depth == 0 {
-				child.Draw(ctx)
+				cx, cy := child.Position()
+				cw, ch := child.Size()
+				if !self.IsClipped(cx, cy, cw, ch) {
+					child.Draw(child, ctx)
+				}
 			} else {
 				drawLater = append(drawLater, child)
 			}
@@ -543,7 +549,11 @@ func (w *WidgetImplement) Draw(ctx *nanovgo.Context) {
 	// draw by depth order
 	sort.Sort(drawLater)
 	for _, child := range drawLater {
-		child.Draw(ctx)
+		cx, cy := child.Position()
+		cw, ch := child.Size()
+		if !self.IsClipped(cx, cy, cw, ch) {
+			child.Draw(child, ctx)
+		}
 	}
 	ctx.Translate(-float32(w.x), -float32(w.y))
 }
@@ -570,6 +580,22 @@ func (w *WidgetImplement) StringHelper(name, extra string) string {
 
 func (w *WidgetImplement) Depth() int {
 	return 0
+}
+
+func (w WidgetImplement) IsClipped(cx, cy, cw, ch int) bool {
+	if cy+ch < 0 {
+		return true
+	}
+	if cy > w.h {
+		return true
+	}
+	if cx+cw < 0 {
+		return true
+	}
+	if cx > w.w {
+		return true
+	}
+	return w.Parent().IsClipped(cx+w.x, cy+w.y, cw, ch)
 }
 
 // Sort Interface

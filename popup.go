@@ -71,7 +71,7 @@ func (p *Popup) IsPositionAbsolute() bool {
 	return true
 }
 
-func (p *Popup) Draw(ctx *nanovgo.Context) {
+func (p *Popup) Draw(self Widget, ctx *nanovgo.Context) {
 	p.RefreshRelativePlacement()
 
 	if !p.visible {
@@ -107,7 +107,7 @@ func (p *Popup) Draw(ctx *nanovgo.Context) {
 
 	ctx.Fill()
 
-	p.WidgetImplement.Draw(ctx)
+	p.WidgetImplement.Draw(self, ctx)
 }
 
 // RefreshRelativePlacement is internal helper function to maintain nested window position values; overridden in \ref Popup

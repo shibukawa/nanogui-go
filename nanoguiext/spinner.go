@@ -115,7 +115,7 @@ func (s *Spinner) PreferredSize(self nanogui.Widget, ctx *nanovgo.Context) (int,
 	return 0, 0
 }
 
-func (s *Spinner) Draw(ctx *nanovgo.Context) {
+func (s *Spinner) Draw(self nanogui.Widget, ctx *nanovgo.Context) {
 }
 
 func (s *Spinner) IsPositionAbsolute() bool {
@@ -158,7 +158,7 @@ func (sf *SpinnerFilter) PreferredSize(self nanogui.Widget, ctx *nanovgo.Context
 	}
 }
 
-func (sf *SpinnerFilter) Draw(ctx *nanovgo.Context) {
+func (sf *SpinnerFilter) Draw(self nanogui.Widget, ctx *nanovgo.Context) {
 	if sf.isActive() {
 		var py int
 		fw, fh := sf.Parent().Size()

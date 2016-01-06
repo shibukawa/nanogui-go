@@ -74,8 +74,8 @@ func (l *Label) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	}
 }
 
-func (l *Label) Draw(ctx *nanovgo.Context) {
-	l.WidgetImplement.Draw(ctx)
+func (l *Label) Draw(self Widget, ctx *nanovgo.Context) {
+	l.WidgetImplement.Draw(self, ctx)
 	ctx.SetFontSize(float32(l.FontSize()))
 	ctx.SetFontFace(l.Font())
 	ctx.SetFillColor(l.color)

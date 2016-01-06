@@ -383,7 +383,7 @@ func (g *ExpandListLayout) computeSize(widget nanogui.Widget, ctx *nanovgo.Conte
 		if h > maxRowHeight {
 			maxRowHeight = h
 		}
-		if column+1 == nCols {
+		if column+1 == nCols || i+1 == widget.ChildCount() {
 			heights[row] = maxRowHeight
 			totalHeight += maxRowHeight
 			maxRowHeight = 0
@@ -394,6 +394,10 @@ func (g *ExpandListLayout) computeSize(widget nanogui.Widget, ctx *nanovgo.Conte
 		heights[nRows-1] += widget.Height() - totalHeight
 		totalHeight = widget.Height()
 	}*/
+	th := 0
+	for _, height := range heights {
+		th += height
+	}
 	return
 }
 

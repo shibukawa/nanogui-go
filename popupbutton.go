@@ -60,12 +60,12 @@ func (p *PopupButton) Popup() Widget {
 	return p.popup.panel
 }
 
-func (p *PopupButton) Draw(ctx *nanovgo.Context) {
+func (p *PopupButton) Draw(self Widget, ctx *nanovgo.Context) {
 	if !p.enabled && p.pushed {
 		p.pushed = false
 	}
 	p.popup.SetVisible(p.pushed)
-	p.Button.Draw(ctx)
+	p.Button.Draw(self, ctx)
 	if p.chevronIcon != 0 {
 		ctx.SetFillColor(p.TextColor())
 		ctx.SetFontSize(float32(p.FontSize()))

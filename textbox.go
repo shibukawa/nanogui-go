@@ -351,8 +351,8 @@ func (t *TextBox) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	return int(sizeW), int(sizeH)
 }
 
-func (t *TextBox) Draw(ctx *nanovgo.Context) {
-	t.WidgetImplement.Draw(ctx)
+func (t *TextBox) Draw(self Widget, ctx *nanovgo.Context) {
+	t.WidgetImplement.Draw(self, ctx)
 
 	x := float32(t.x)
 	y := float32(t.y)

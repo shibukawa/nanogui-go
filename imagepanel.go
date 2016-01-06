@@ -65,7 +65,7 @@ func (i *ImagePanel) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
 	return w, h
 }
 
-func (i *ImagePanel) Draw(ctx *nanovgo.Context) {
+func (i *ImagePanel) Draw(self Widget, ctx *nanovgo.Context) {
 	cols, _ := i.gridSize()
 
 	x := float32(i.x)
