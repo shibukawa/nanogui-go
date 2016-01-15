@@ -78,15 +78,15 @@ func (b *ExpandBoxLayout) SetSpacing(s int) {
 }
 
 func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Context) {
-	fX, fY := widget.FixedSize()
+	fW, fH := widget.FixedSize()
 	var containerSize [2]int
-	if fX > 0 {
-		containerSize[0] = fX
+	if fW > 0 {
+		containerSize[0] = fW
 	} else {
 		containerSize[0] = widget.Width()
 	}
-	if fY > 0 {
-		containerSize[1] = fY
+	if fH > 0 {
+		containerSize[1] = fH
 	} else {
 		containerSize[1] = widget.Height()
 	}
@@ -105,7 +105,7 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 	}
 	childCount := 0
 	fixedChildren := make([]bool, widget.ChildCount())
-	fixedLength := make([][2]int, widget.ChildCount())
+	preferredLength := make([][2]int, widget.ChildCount())
 	remainedLength := containerSize[axis1] - position - b.margin + b.spacing
 	for i, child := range widget.Children() {
 		if child.Visible() && !child.IsPositionAbsolute() {
@@ -113,11 +113,22 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 			if _, isScroll := child.(*nanogui.VScrollPanel); !isScroll {
 				fW, fH := child.FixedSize()
 				fs := [2]int{fW, fH}
-				fixedLength[i] = fs
+				preferredLength[i] = fs
 				if fs[axis1] > 0 {
 					remainedLength -= fs[axis1]
 					fixedChildren[i] = true
 					childCount--
+				} else if child.Clamp()[axis1] {
+					pW, pH := child.PreferredSize(child, ctx)
+					ps := [2]int{pW, pH}
+					remainedLength -= ps[axis1]
+					preferredLength[i] = ps
+					fixedChildren[i] = true
+					childCount--
+				} else {
+					pW, pH := child.PreferredSize(child, ctx)
+					ps := [2]int{pW, pH}
+					preferredLength[i] = ps
 				}
 			}
 			remainedLength -= b.spacing
@@ -139,11 +150,12 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 		pos[1] = yOffset
 		pos[axis1] = position
 		var targetSize [2]int
-		if fixedChildren[i] && fixedLength[i][axis1] > 0 {
-			targetSize[axis1] = fixedLength[i][axis1]
+		if fixedChildren[i] && preferredLength[i][axis1] > 0 {
+			targetSize[axis1] = preferredLength[i][axis1]
 		} else {
 			targetSize[axis1] = averageSize
 		}
+		targetSize[axis2] = preferredLength[i][axis2]
 
 		switch b.alignment {
 		case nanogui.Minimum:
@@ -154,11 +166,7 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 			pos[axis2] += containerSize[axis2] - yOffset - targetSize[axis2] - b.margin*2
 		case nanogui.Fill:
 			pos[axis2] += b.margin
-			if fixedLength[i][axis2] > 0 {
-				targetSize[axis2] = fixedLength[i][axis2]
-			} else {
-				targetSize[axis2] = containerSize[axis2] - yOffset - b.margin*2
-			}
+			targetSize[axis2] = containerSize[axis2] - yOffset - b.margin*2
 		}
 		child.SetPosition(pos[0], pos[1])
 		child.SetSize(targetSize[0], targetSize[1])
@@ -168,17 +176,44 @@ func (b *ExpandBoxLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.Co
 }
 
 func (b *ExpandBoxLayout) PreferredSize(widget nanogui.Widget, ctx *nanovgo.Context) (int, int) {
-	fX, fY := widget.FixedSize()
+	fW, fH := widget.FixedSize()
 	var containerSize [2]int
-	if fX > 0 {
-		containerSize[0] = fX
+	if fW > 0 {
+		containerSize[0] = fW
 	} else {
 		containerSize[0] = widget.Width()
 	}
-	if fY > 0 {
-		containerSize[1] = fY
+	if fH > 0 {
+		containerSize[1] = fH
 	} else {
 		containerSize[1] = widget.Height()
+	}
+	axis1 := int(b.orientation)
+	axis2 := (int(b.orientation) + 1) % 2
+	minimumContainerSize := []int{0, 0}
+	minimumContainerSize[axis1] += b.margin*2
+
+	childCount := 0
+	for _, child := range widget.Children() {
+		if !child.Visible() || child.IsPositionAbsolute() {
+			continue
+		}
+		childCount++
+		w, h := child.PreferredSize(child, ctx)
+		size := []int{w, h}
+		minimumContainerSize[axis1] += size[axis1]
+		if size[axis2] > minimumContainerSize[axis2] {
+			minimumContainerSize[axis2] = size[axis2]
+		}
+	}
+	if childCount > 0 {
+		minimumContainerSize[axis1] += (childCount-1) * b.spacing
+	}
+	minimumContainerSize[axis2] += b.margin * 2
+	for i := 0; i < 2; i++ {
+		if minimumContainerSize[i] > containerSize[i] {
+			containerSize[i] = minimumContainerSize[i]
+		}
 	}
 	return containerSize[0], containerSize[1]
 }
@@ -306,6 +341,7 @@ func (g *ExpandListLayout) OnPerformLayout(widget nanogui.Widget, ctx *nanovgo.C
 		childYOffset, childHeight := alignment(g.alignments[1], height, ph)
 		child.SetPosition(xOffset+childXOffset, yOffset+childYOffset)
 		child.SetSize(childWidth, childHeight)
+
 		if column+1 == nCols {
 			yOffset += g.spacing[1] + height
 			xOffset = g.margin
@@ -389,14 +425,6 @@ func (g *ExpandListLayout) computeSize(widget nanogui.Widget, ctx *nanovgo.Conte
 			maxRowHeight = 0
 			row++
 		}
-	}
-	/*if totalHeight < widget.Height() {
-		heights[nRows-1] += widget.Height() - totalHeight
-		totalHeight = widget.Height()
-	}*/
-	th := 0
-	for _, height := range heights {
-		th += height
 	}
 	return
 }

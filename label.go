@@ -10,9 +10,21 @@ import (
 //
 type Label struct {
 	WidgetImplement
-	caption  string
-	fontFace string
-	color    nanovgo.Color
+	caption     string
+	fontFace    string
+	color       nanovgo.Color
+	columnWidth int
+	wrap        bool
+}
+
+func NewLabel(parent Widget, caption string) *Label {
+	label := &Label{
+		caption: caption,
+		color:   parent.Theme().TextColor,
+		wrap:    true,
+	}
+	InitWidget(label, parent)
+	return label
 }
 
 // Caption() gets the label's text caption
@@ -48,13 +60,20 @@ func (l *Label) SetColor(color nanovgo.Color) {
 	l.color = color
 }
 
-func NewLabel(parent Widget, caption string) *Label {
-	label := &Label{
-		caption: caption,
-		color:   parent.Theme().TextColor,
-	}
-	InitWidget(label, parent)
-	return label
+func (l *Label) ColumnWidth() int {
+	return l.columnWidth
+}
+
+func (l *Label) SetColumnWidth(width int) {
+	l.columnWidth = width
+}
+
+func (l *Label) Wrap() bool {
+	return l.wrap
+}
+
+func (l *Label) SetWrap(wrap bool) {
+	l.wrap = wrap
 }
 
 func (l *Label) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
@@ -63,14 +82,22 @@ func (l *Label) PreferredSize(self Widget, ctx *nanovgo.Context) (int, int) {
 	}
 	ctx.SetFontSize(float32(l.FontSize()))
 	ctx.SetFontFace(l.Font())
-	if l.fixedW > 0 {
+
+	width := 0
+	if l.FixedWidth() > 0 {
+		width = l.FixedWidth()
+	} else if l.columnWidth > 0 && l.wrap {
+		width = l.columnWidth
+	}
+
+	if width > 0 {
 		ctx.SetTextAlign(nanovgo.AlignLeft | nanovgo.AlignTop)
-		bounds := ctx.TextBoxBounds(0, 0, float32(l.fixedW), l.caption)
-		return l.fixedW, int(bounds[3] - bounds[1])
+		bounds := ctx.TextBoxBounds(0, 0, float32(width), l.caption)
+		return width, int(bounds[3] - bounds[1])
 	} else {
 		ctx.SetTextAlign(nanovgo.AlignLeft | nanovgo.AlignTop)
 		w, _ := ctx.TextBounds(0, 0, l.caption)
-		return int(w), l.theme.StandardFontSize
+		return int(w), l.Theme().StandardFontSize
 	}
 }
 
@@ -79,12 +106,19 @@ func (l *Label) Draw(self Widget, ctx *nanovgo.Context) {
 	ctx.SetFontSize(float32(l.FontSize()))
 	ctx.SetFontFace(l.Font())
 	ctx.SetFillColor(l.color)
-	if l.fixedW > 0 {
+
+	width := 0
+	if l.FixedWidth() > 0 {
+		width = l.FixedWidth()
+	} else if l.columnWidth > 0 && l.wrap {
+		width = l.columnWidth
+	}
+
+	if width > 0 {
 		ctx.SetTextAlign(nanovgo.AlignLeft | nanovgo.AlignTop)
-		ctx.TextBox(float32(l.x), float32(l.y), float32(l.fixedW), l.caption)
+		ctx.TextBox(float32(l.x), float32(l.y), float32(width), l.caption)
 	} else {
 		ctx.SetTextAlign(nanovgo.AlignLeft | nanovgo.AlignMiddle)
-		//fmt.Println(l.String())
 		ctx.Text(float32(l.x), float32(l.y)+float32(l.h)*0.5, l.caption)
 	}
 }

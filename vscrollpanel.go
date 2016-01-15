@@ -44,6 +44,11 @@ func (v *VScrollPanel) PreferredSize(self Widget, ctx *nanovgo.Context) (int, in
 	if len(v.children) == 0 {
 		return 0, 0
 	}
+	layout := self.Layout()
+	if layout != nil {
+		w, h := layout.PreferredSize(self, ctx)
+		return w + 12, h
+	}
 	child := v.children[0]
 	w, h := child.PreferredSize(child, ctx)
 	return w + 12, h
@@ -111,7 +116,12 @@ func (v *VScrollPanel) Draw(self Widget, ctx *nanovgo.Context) {
 	h := float32(v.h)
 
 	child := v.children[0]
-	_, v.childPreferredHeight = child.PreferredSize(child, ctx)
+	layout := self.Layout()
+	if layout != nil {
+		_, v.childPreferredHeight = layout.PreferredSize(self, ctx)
+	} else {
+		_, v.childPreferredHeight = child.PreferredSize(child, ctx)
+	}
 
 	ctx.Save()
 	ctx.Translate(x, y)

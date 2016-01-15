@@ -15,14 +15,18 @@ import (
 type Widget interface {
 	Parent() Widget
 	SetParent(parent Widget)
+
 	Layout() Layout
 	SetLayout(layout Layout)
+
 	Theme() *Theme
 	SetTheme(theme *Theme)
+
 	Position() (int, int)
 	SetPosition(x, y int)
 	AbsolutePosition() (int, int)
 	IsPositionAbsolute() bool
+
 	Size() (int, int)
 	SetSize(w, h int)
 	Width() int
@@ -35,30 +39,43 @@ type Widget interface {
 	SetFixedWidth(w int)
 	FixedHeight() int
 	SetFixedHeight(h int)
+	Clamp() [2]bool
+	SetClampWidth(clamp bool)
+	SetClampHeight(clamp bool)
+
 	Visible() bool
 	SetVisible(v bool)
 	VisibleRecursive() bool
+
 	ChildCount() int
 	Children() []Widget
 	SetChildren([]Widget)
 	AddChild(self, w Widget)
 	RemoveChildByIndex(i int)
 	RemoveChild(w Widget)
+
 	FindWindow() IWindow
+
 	SetID(id string)
 	ID() string
+
 	Enabled() bool
 	SetEnabled(e bool)
+
 	Focused() bool
 	SetFocused(f bool)
 	RequestFocus(self Widget)
+
 	Tooltip() string
 	SetTooltip(s string)
+
 	FontSize() int
 	SetFontSize(s int)
 	HasFontSize() bool
+
 	Cursor() Cursor
 	SetCursor(c Cursor)
+
 	Contains(x, y int) bool
 	IsClipped(x, y, w, h int) bool
 
@@ -73,11 +90,13 @@ type Widget interface {
 	KeyboardCharacterEvent(self Widget, codePoint rune) bool
 	IMEPreeditEvent(self Widget, text []rune, blocks []int, focusedBlock int) bool
 	IMEStatusEvent(self Widget) bool
+
 	PreferredSize(self Widget, ctx *nanovgo.Context) (int, int)
 	OnPerformLayout(self Widget, ctx *nanovgo.Context)
 	Draw(self Widget, ctx *nanovgo.Context)
-	String() string
 	Depth() int
+
+	String() string
 }
 
 type WidgetImplement struct {
@@ -85,6 +104,7 @@ type WidgetImplement struct {
 	layout                     Layout
 	theme                      *Theme
 	x, y, w, h, fixedW, fixedH int
+	clamp                      [2]bool
 	visible, enabled           bool
 	focused, mouseFocus        bool
 	id                         string
@@ -220,6 +240,21 @@ func (wg *WidgetImplement) SetFixedWidth(w int) {
 // SetFixedSize() set the fixed height (see SetFixedSize())
 func (w *WidgetImplement) SetFixedHeight(h int) {
 	w.fixedH = h
+}
+
+// Clamp() returns whether preferred size is used as fixed size
+func (w *WidgetImplement) Clamp() [2]bool {
+	return w.clamp
+}
+
+// SetClampWidth() set the preferred width as fixed width
+func (w *WidgetImplement) SetClampWidth(clamp bool) {
+	w.clamp[0] = clamp
+}
+
+// SetClampHeight() set the preferred height as fixed height
+func (w *WidgetImplement) SetClampHeight(clamp bool) {
+	w.clamp[1] = clamp
 }
 
 // Visible() returns whether or not the widget is currently visible (assuming all parents are visible)
