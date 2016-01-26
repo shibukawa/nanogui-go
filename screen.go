@@ -563,6 +563,11 @@ func (s *Screen) dropCallbackEvent(fileNames []string) bool {
 func (s *Screen) scrollCallbackEvent(x, y float32) bool {
 	s.lastInteraction = GetTime()
 
+	if runtime.GOOS == "windows" {
+		x *= 32
+		y *= 32
+	}
+
 	if len(s.focusPath) > 1 {
 		window, ok := s.focusPath[len(s.focusPath)-2].(*Window)
 		if ok && window.Modal() {
